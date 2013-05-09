@@ -49,12 +49,12 @@
 			<artifactId>jersey-grizzly2</artifactId>
 			<version>1.9</version>
 		</dependency>
-		
+
 		<dependency>
-	<groupId>commons-codec</groupId>
-	<artifactId>commons-codec</artifactId>
-	<version>1.7</version>
-</dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.7</version>
+		</dependency>
 
 		<!-- Test Dependencies -->
 		<dependency>
@@ -143,7 +143,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-<!-- 					<archiveClasses>true</archiveClasses> -->
+					<!-- <archiveClasses>true</archiveClasses> -->
 					<webResources>
 						<!-- in order to interpolate version from pom into appengine-web.xml -->
 						<resource>
@@ -204,7 +204,7 @@
 						<exclude>org.datanucleus:datanucleus-api-jdo</exclude>
 						<exclude>com.google.appengine.orm:datanucleus-appengine</exclude>
 
-					
+
 
 					</excludes>
 
