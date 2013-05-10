@@ -16,35 +16,27 @@
 package com.google.gwt.site.webapp.server.guice;
 
 import com.google.apphosting.utils.remoteapi.RemoteApiServlet;
-import com.google.gwt.site.webapp.server.resources.DocumentationServlet;
-import com.google.gwt.site.webapp.server.resources.PrivacyResource;
-import com.google.gwt.site.webapp.server.resources.StandardResource;
-import com.google.gwt.site.webapp.server.resources.TermsOfServiceResource;
+import com.google.gwt.site.webapp.server.resources.ContentServlet;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
-
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class MyServletModule extends ServletModule {
   @Override
   protected void configureServlets() {
     // web resources
-    bind(StandardResource.class);
-    bind(TermsOfServiceResource.class);
-    bind(PrivacyResource.class);
-    
+		// bind(StandardResource.class);
+		// bind(TermsOfServiceResource.class);
+		// bind(PrivacyResource.class);
+  
     //docs
     bind(RemoteApiServlet.class).in(Singleton.class);
-    bind(DocumentationServlet.class).in(Singleton.class);
+    bind(ContentServlet.class).in(Singleton.class);
     
     serve("/remote_api").with( RemoteApiServlet.class);
-    serve("/docs/*").with( DocumentationServlet.class);
+    serve("/*").with( ContentServlet.class);
     
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("com.sun.jersey.config.property.JSPTemplatesBasePath", "/WEB-INF/jsp");
-    serve("/*").with(GuiceContainer.class, params);
+//    Map<String, String> params = new HashMap<String, String>();
+//    params.put("com.sun.jersey.config.property.JSPTemplatesBasePath", "/WEB-INF/jsp");
+//    serve("/*").with(GuiceContainer.class, params);
   }
 }
