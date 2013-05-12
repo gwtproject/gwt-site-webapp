@@ -108,7 +108,7 @@ public class ContentServlet extends HttpServlet {
 
   private String normalizePath(String fullPath) {
 
-    fullPath = fullPath.substring("/docs/".length(), fullPath.length());
+    fullPath = fullPath.substring("/".length(), fullPath.length());
 
     if ("".equals(fullPath) || fullPath.endsWith("/")) {
       fullPath += "index.html";
