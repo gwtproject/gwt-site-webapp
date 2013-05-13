@@ -79,12 +79,26 @@ public class GWTProjectEntryPoint implements EntryPoint {
     if (pageUrl.equals(currentPage)) {
       return;
     }
+    
+    if(supportsHtml5Histroy()) {
+    	currentPage = pageUrl;
 
-    currentPage = pageUrl;
+        $("#gwt-content").load(pageUrl + " #gwt-content > div");
 
-    $("#gwt-content").load(pageUrl + " #gwt-content > div");
+        pushState("/" + pageUrl);
+    }else{
+    	Window.Location.replace(pageUrl);
+    }
 
-    String newUrl = Window.Location.createUrlBuilder().setHash(currentPage).buildString();
-    Window.Location.replace(newUrl);
+    
   }
+  
+  private native boolean pushState(String url) /*-{
+	  $wnd.history.pushState(null, null, url);
+  }-*/;
+  
+  private native boolean supportsHtml5Histroy()/*-{
+  	return $wnd.history && $wnd.history.pushState;
+  }-*/;
+  
 }
