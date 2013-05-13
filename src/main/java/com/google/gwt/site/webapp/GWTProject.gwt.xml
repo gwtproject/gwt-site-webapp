@@ -3,6 +3,8 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit//EN" "http://google-web-toolkit.googlecode.com/svn/trunk/distro-source/core/src/gwt-module.dtd">
 <module rename-to="gwtproject">
 	<inherits name="com.google.gwt.user.User" />
+    <inherits name="com.google.gwt.query.Query"/>
+
 	<source path="client" />
 	<entry-point
 		class="com.google.gwt.site.webapp.client.GWTProjectEntryPoint" />

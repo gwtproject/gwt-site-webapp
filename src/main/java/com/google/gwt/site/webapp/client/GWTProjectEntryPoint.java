@@ -16,13 +16,74 @@
 package com.google.gwt.site.webapp.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.query.client.Function;
+import com.google.gwt.query.client.GQuery;
+import com.google.gwt.user.client.Window;
+
+import static com.google.gwt.query.client.GQuery.$;
 
 public class GWTProjectEntryPoint implements EntryPoint {
+  private String currentPage;
 
   @Override
   public void onModuleLoad() {
-    // TODO Auto-generated method stub
+    enhanceMenu();
 
+    maybeLoadPage();
   }
 
+  private void maybeLoadPage() {
+    String currentHash = Window.Location.getHash();
+
+    if (currentHash != null && currentHash.length() > 0) {
+      if (currentHash.startsWith("#")) {
+        currentHash = currentHash.substring(1);
+      }
+
+      loadPage(currentHash);
+      // TODO open the menu to the page
+    }
+  }
+
+  private void enhanceMenu() {
+    $("li.folder > a").click(new Function() {
+      @Override
+      public void f(Element e) {
+        tooggleMenu($(e).parent());
+      }
+    });
+
+    $("#gwt-toc a").click(new Function() {
+      @Override
+      public void f(Element e) {
+        loadPage(e.getAttribute("href"));
+
+        getEvent().preventDefault();
+      }
+    });
+  }
+
+  private void tooggleMenu(GQuery menu) {
+    if (menu.hasClass("open")) {
+      menu.removeClass("open");
+    } else {
+      menu.addClass("open");
+    }
+
+    menu.children("ul").slideToggle(200);
+  }
+
+  private void loadPage(String pageUrl){
+    if (pageUrl.equals(currentPage)) {
+      return;
+    }
+
+    currentPage = pageUrl;
+
+    $("#gwt-content").load(pageUrl + " #gwt-content > div");
+
+    String newUrl = Window.Location.createUrlBuilder().setHash(currentPage).buildString();
+    Window.Location.replace(newUrl);
+  }
 }

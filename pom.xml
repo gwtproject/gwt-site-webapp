@@ -18,6 +18,7 @@
 		<appengine.target.version>1.7.6</appengine.target.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gwtversion>2.5.1</gwtversion>
+        <gwtquery.version>1.3.2</gwtquery.version>
 	</properties>
 
 	<dependencies>
@@ -124,6 +125,13 @@
 			<version>1.0</version>
 		</dependency>
 
+        <!-- UI dependencies -->
+        <dependency>
+            <groupId>com.googlecode.gwtquery</groupId>
+            <artifactId>gwtquery</artifactId>
+            <version>${gwtquery.version}</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -203,9 +211,6 @@
 						<exclude>org.datanucleus:datanucleus-jpa</exclude>
 						<exclude>org.datanucleus:datanucleus-api-jdo</exclude>
 						<exclude>com.google.appengine.orm:datanucleus-appengine</exclude>
-
-
-
 					</excludes>
 
 
