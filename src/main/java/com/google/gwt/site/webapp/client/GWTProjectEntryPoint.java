@@ -47,10 +47,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private void enhanceMenu() {
+    // TODO : arrow should be clickable
     $("li.folder > a").click(new Function() {
       @Override
       public void f(Element e) {
-        tooggleMenu($(e).parent());
+        toggleMenu($(e).parent());
       }
     });
 
@@ -64,7 +65,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
     });
   }
 
-  private void tooggleMenu(GQuery menu) {
+  private void toggleMenu(GQuery menu) {
     if (menu.hasClass("open")) {
       menu.removeClass("open");
     } else {
