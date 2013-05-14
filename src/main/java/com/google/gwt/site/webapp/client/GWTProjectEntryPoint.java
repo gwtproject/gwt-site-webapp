@@ -95,6 +95,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
 			  pushState(pageUrl);
       }
 
+    } else {
+      Window.Location.replace(pageUrl);
     }
 	}
 
