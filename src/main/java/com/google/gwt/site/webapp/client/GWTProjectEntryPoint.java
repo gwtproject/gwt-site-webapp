@@ -31,6 +31,10 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		enhanceMenu();
     
     openMenu();
+
+    if (supportsHtml5History()) {
+      initOnPopState();
+    }
 	}
 
   private void openMenu() {
@@ -55,15 +59,15 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		$("#gwt-toc li.folder > ul").css("display", "none");
 
 		$("#gwt-toc a").click(new Function() {
-			@Override
-			public void f(Element e) {
-				loadPage(e.getAttribute("href"));
+      @Override
+      public void f(Element e) {
+        loadPage(e.getAttribute("href"), true);
 
         selectItem(e);
 
-				getEvent().preventDefault();
-			}
-		});
+        getEvent().preventDefault();
+      }
+    });
 	}
 
 	private void toggleMenu(GQuery menu) {
@@ -76,23 +80,27 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		menu.children("ul").slideToggle(200);
 	}
 
-	private void loadPage(String pageUrl) {
+	private void loadPage(String pageUrl, boolean pushState) {
 		if (pageUrl.equals(currentPage)) {
 			return;
 		}
 
-		if (supportsHtml5Histroy()) {
+		if (supportsHtml5History()) {
 			currentPage = pageUrl;
 			
 
 			$("#gwt-content").load(pageUrl + " #gwt-content > div");
 
-			pushState(pageUrl);
-		} else {
-			Window.Location.replace(pageUrl);
-		}
+      if (pushState) {
+			  pushState(pageUrl);
+      }
 
+    }
 	}
+
+  private void onPopState() {
+    loadPage(Window.Location.getPath(), false);
+  }
 
   private void selectItem(Element item) {
     $("#gwt-toc a.selected").removeClass("selected");
@@ -103,7 +111,14 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		$wnd.history.pushState(null, null, url);
 	}-*/;
 
-	private native boolean supportsHtml5Histroy()/*-{
+	private native boolean supportsHtml5History()/*-{
 		return $wnd.history && $wnd.history.pushState;
 	}-*/;
+
+  private native void initOnPopState() /*-{
+      var that = this;
+      $wnd.onpopstate = $entry(function(e) {
+          that.@com.google.gwt.site.webapp.client.GWTProjectEntryPoint::onPopState()();
+      });
+  }-*/;
 }
