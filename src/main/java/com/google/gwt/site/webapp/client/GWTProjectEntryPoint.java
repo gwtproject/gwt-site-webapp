@@ -42,7 +42,6 @@ public class GWTProjectEntryPoint implements EntryPoint {
     NOT_RELATIVE_URL_REGEX = RegExp.compile("^(https?)|(mailto)|(ftp)|(javascript)\\:.*$");
   }
 
-
   private String currentPage;
 
 	@Override
@@ -114,7 +113,6 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     if (supportsHtml5History() && !path.equals(currentPage)) {
       currentPage = path;
-
 
       $("#gwt-content").load(pageUrl + " #gwt-content > div", null, new Function(){
           @Override
