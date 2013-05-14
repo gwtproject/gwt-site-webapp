@@ -24,81 +24,86 @@ import com.google.gwt.user.client.Window;
 import static com.google.gwt.query.client.GQuery.$;
 
 public class GWTProjectEntryPoint implements EntryPoint {
-  private String currentPage;
+	private String currentPage;
 
-  @Override
-  public void onModuleLoad() {
-    enhanceMenu();
+	@Override
+	public void onModuleLoad() {
+		
+		enhanceMenu();
 
-    maybeLoadPage();
-  }
+		//maybeLoadPage();
+	}
 
-  private void maybeLoadPage() {
-    String currentHash = Window.Location.getHash();
+	private void maybeLoadPage() {
+		String currentHash = Window.Location.getHash();
 
-    if (currentHash != null && currentHash.length() > 0) {
-      if (currentHash.startsWith("#")) {
-        currentHash = currentHash.substring(1);
-      }
+		if (currentHash != null && currentHash.length() > 0) {
+			if (currentHash.startsWith("#")) {
+				currentHash = currentHash.substring(1);
+			}
 
-      loadPage(currentHash);
-      // TODO open the menu to the page
-    }
-  }
+			loadPage(currentHash);
+			// TODO open the menu to the page
+		}
+	}
 
-  private void enhanceMenu() {
-    // TODO : arrow should be clickable
-    $("li.folder > a").click(new Function() {
-      @Override
-      public void f(Element e) {
-        toggleMenu($(e).parent());
-      }
-    });
+	private void enhanceMenu() {
+		// TODO : arrow should be clickable
+		$("li.folder > a").click(new Function() {
+			@Override
+			public void f(Element e) {
+				toggleMenu($(e).parent());
+			}
+		});
+		
+		$("#gwt-toc li.folder > ul").css("display", "none");
 
-    $("#gwt-toc a").click(new Function() {
-      @Override
-      public void f(Element e) {
-        loadPage(e.getAttribute("href"));
+		$("#gwt-toc a").click(new Function() {
+			@Override
+			public void f(Element e) {
+				loadPage(e.getAttribute("href"));
 
-        getEvent().preventDefault();
-      }
-    });
-  }
+				getEvent().preventDefault();
+			}
+		});
+		
+		 
+	}
 
-  private void toggleMenu(GQuery menu) {
-    if (menu.hasClass("open")) {
-      menu.removeClass("open");
-    } else {
-      menu.addClass("open");
-    }
+	private void toggleMenu(GQuery menu) {
+		if (menu.hasClass("open")) {
+			menu.removeClass("open");
+		} else {
+			menu.addClass("open");
+		}
 
-    menu.children("ul").slideToggle(200);
-  }
+		menu.children("ul").slideToggle(200);
+	}
 
-  private void loadPage(String pageUrl){
-    if (pageUrl.equals(currentPage)) {
-      return;
-    }
-    
-    if(supportsHtml5Histroy()) {
-    	currentPage = pageUrl;
+	private void loadPage(String pageUrl) {
+		if (pageUrl.equals(currentPage)) {
+			return;
+		}
 
-        $("#gwt-content").load(pageUrl + " #gwt-content > div");
+		if (supportsHtml5Histroy()) {
+			currentPage = pageUrl;
+			
 
-        pushState("/" + pageUrl);
-    }else{
-    	Window.Location.replace(pageUrl);
-    }
+			$("#gwt-content").load(pageUrl + " #gwt-content > div");
 
-    
-  }
-  
-  private native boolean pushState(String url) /*-{
-	  $wnd.history.pushState(null, null, url);
-  }-*/;
-  
-  private native boolean supportsHtml5Histroy()/*-{
-  	return $wnd.history && $wnd.history.pushState;
-  }-*/;
-  
+			pushState(pageUrl);
+		} else {
+			Window.Location.replace(pageUrl);
+		}
+
+	}
+
+	private native boolean pushState(String url) /*-{
+		$wnd.history.pushState(null, null, url);
+	}-*/;
+
+	private native boolean supportsHtml5Histroy()/*-{
+		return $wnd.history && $wnd.history.pushState;
+	}-*/;
+
 }
