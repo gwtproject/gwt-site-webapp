@@ -57,11 +57,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		});
 		
 		$("#gwt-toc li.folder > ul").css("display", "none");
-
+ 
 		$("#gwt-toc a").click(new Function() {
 			@Override
 			public void f(Element e) {
-				loadPage(e.getAttribute("href"));
+				loadPage(e.getAttribute("ahref"));
 
 				getEvent().preventDefault();
 			}
