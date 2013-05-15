@@ -27,27 +27,23 @@ public class GWTProjectEntryPoint implements EntryPoint {
 	private String currentPage;
 
 	@Override
-	public void onModuleLoad() {
-		
+	public void onModuleLoad() {	
 		enhanceMenu();
-
-		//maybeLoadPage();
+    
+    openMenu();
 	}
 
-	private void maybeLoadPage() {
-		String currentHash = Window.Location.getHash();
+  private void openMenu() {
+    String href = Window.Location.getPath();
 
-		if (currentHash != null && currentHash.length() > 0) {
-			if (currentHash.startsWith("#")) {
-				currentHash = currentHash.substring(1);
-			}
+    if (href != null && href.length() > 0) {
+      $("#gwt-toc a[href$='" + href + "']").addClass("selected")
+          .parentsUntil("#gwt-toc").filter("li.folder").addClass("open")
+          .children("ul").slideDown(200);
+    }
+  }
 
-			loadPage(currentHash);
-			// TODO open the menu to the page
-		}
-	}
-
-	private void enhanceMenu() {
+  private void enhanceMenu() {
 		// TODO : arrow should be clickable
 		$("li.folder > a").click(new Function() {
 			@Override
@@ -63,11 +59,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
 			public void f(Element e) {
 				loadPage(e.getAttribute("ahref"));
 
+        selectItem(e);
+
 				getEvent().preventDefault();
 			}
 		});
-		
-		 
 	}
 
 	private void toggleMenu(GQuery menu) {
@@ -98,6 +94,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
 	}
 
+  private void selectItem(Element item) {
+    $("#gwt-toc a.selected").removeClass("selected");
+    item.addClassName("selected");
+  }
+
 	private native boolean pushState(String url) /*-{
 		$wnd.history.pushState(null, null, url);
 	}-*/;
@@ -105,5 +106,4 @@ public class GWTProjectEntryPoint implements EntryPoint {
 	private native boolean supportsHtml5Histroy()/*-{
 		return $wnd.history && $wnd.history.pushState;
 	}-*/;
-
 }
