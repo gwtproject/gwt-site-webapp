@@ -61,7 +61,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		$("#gwt-toc a.selected").removeClass("selected");
 
 		if (path != null && path.length() > 0) {
-			$("#gwt-toc a[href$='" + path + "']").addClass("selected")
+			$("#gwt-toc a[ahref$='" + path + "']").addClass("selected")
 					.parentsUntil("#gwt-toc").filter("li.folder")
 					.addClass("open").children("ul").slideDown(200);
 		}
