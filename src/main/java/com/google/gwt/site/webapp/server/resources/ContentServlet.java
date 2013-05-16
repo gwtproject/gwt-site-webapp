@@ -113,6 +113,7 @@ public class ContentServlet extends HttpServlet {
     if ("".equals(fullPath) || fullPath.endsWith("/")) {
       fullPath += "index.html";
     }
+    
     return fullPath;
   }
 }
