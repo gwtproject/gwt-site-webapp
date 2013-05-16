@@ -25,6 +25,7 @@ import com.google.gwt.user.client.Window;
 
 import static com.google.gwt.query.client.GQuery.$;
 import static com.google.gwt.query.client.GQuery.body;
+import static com.google.gwt.query.client.GQuery.get;
 
 public class GWTProjectEntryPoint implements EntryPoint {
 	private static final RegExp INTERNAL_URL_REGEX;
@@ -73,28 +74,31 @@ public class GWTProjectEntryPoint implements EntryPoint {
 			@Override
 			public void f(Element e) {
 				toggleMenu($(e).parent());
+
+        getEvent().stopPropagation();
+        getEvent().preventDefault();
 			}
 		});
 
 		$("#gwt-toc li.folder > ul").css("display", "none");
 
 		$("a", body).live(Event.ONCLICK, new Function() {
-			@Override
-			public boolean f(Event event) {
-				String href = null;
-				if (getElement().hasAttribute("ahref")) {
-					href = getElement().getAttribute("ahref");
-				} else {
-					href = getElement().getAttribute("href");
-				}
+      @Override
+      public boolean f(Event event) {
+        String href = null;
+        if (getElement().hasAttribute("ahref")) {
+          href = getElement().getAttribute("ahref");
+        } else {
+          href = getElement().getAttribute("href");
+        }
 
-				if (isInternalNavigation(href)) {
-					return loadPage(href, true);
-				}
+        if (isInternalNavigation(href)) {
+          return loadPage(href, true);
+        }
 
-				return true;
-			}
-		});
+        return true;
+      }
+    });
 	}
 
 	private boolean isInternalNavigation(String href) {
