@@ -23,14 +23,14 @@
 		<listener-class>com.google.gwt.site.webapp.server.guice.GuiceServletConfig</listener-class>
 	</listener>
 	
-	<security-constraint>
-        <web-resource-collection>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>*</role-name>
-        </auth-constraint>
-    </security-constraint>
+<!-- 	<security-constraint> -->
+<!--         <web-resource-collection> -->
+<!--             <url-pattern>/*</url-pattern> -->
+<!--         </web-resource-collection> -->
+<!--         <auth-constraint> -->
+<!--             <role-name>*</role-name> -->
+<!--         </auth-constraint> -->
+<!--     </security-constraint> -->
     
 
 	
