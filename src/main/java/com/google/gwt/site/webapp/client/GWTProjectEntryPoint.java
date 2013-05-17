@@ -128,13 +128,14 @@ public class GWTProjectEntryPoint implements EntryPoint {
 		if (supportsHtml5History() && !path.equals(currentPage)) {
 			currentPage = path;
 
+            if (pushState) {
+                pushState(pageUrl);
+            }
+
 			$("#gwt-content").load(pageUrl + " #gwt-content > div", null,
 					new Function() {
 						@Override
 						public void f() {
-							if (pushState) {
-								pushState(pageUrl);
-							}
 							if (hash != null) {
 								scrollTo(hash);
 							}
