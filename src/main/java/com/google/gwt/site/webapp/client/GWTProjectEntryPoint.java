@@ -20,6 +20,7 @@ import static com.google.gwt.query.client.GQuery.*;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.query.client.Function;
 import com.google.gwt.query.client.GQuery;
+import com.google.gwt.query.client.Properties;
 import com.google.gwt.query.client.js.JsUtils;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Event;
@@ -28,7 +29,6 @@ import com.google.gwt.user.client.Window;
 public class GWTProjectEntryPoint implements EntryPoint {
 
   private static final RegExp isSameOriginRexp;
-
   static {
     // XHR must match all: protocol, host and port.
     // Note: in chrome this could be simpler since it has window.location.origin
@@ -42,6 +42,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private String currentPage;
+  private static Properties history = JsUtils.prop(window, "history");
+  private static boolean isPushstateCapable = $(history).prop("pushState") != null;
 
   @Override
   public void onModuleLoad() {
@@ -49,9 +51,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     openMenu(Window.Location.getPath());
 
-    if (supportsHtml5History()) {
-      initOnPopState();
-    }
+    bindPopState();
   }
 
   private void openMenu(String path) {
@@ -98,7 +98,6 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private boolean loadPage(final String pageUrl, final boolean pushState) {
-
     if (!isSameOriginRexp.test(pageUrl)) {
       return true;
     }
@@ -109,11 +108,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
     final String hash = hashIndex != -1 ? pageUrl.substring(hashIndex)
         : null;
 
-    if (supportsHtml5History() && !path.equals(currentPage)) {
+    if (isPushstateCapable && !path.equals(currentPage)) {
       currentPage = path;
 
       if (pushState) {
-          pushState(pageUrl);
+        JsUtils.runJavascriptFunction(history, "pushState", null, null, pageUrl);
       }
 
       $("#gwt-content").load(pageUrl + " #gwt-content > div", null,
@@ -121,40 +120,27 @@ public class GWTProjectEntryPoint implements EntryPoint {
             @Override
             public void f() {
               if (hash != null) {
-                scrollTo(hash);
+                $(hash).scrollIntoView();
               }
               openMenu(path);
             }
           });
 
-      return false;
     } else if (hash != null) {
-      scrollTo(hash);
+      $(hash).scrollIntoView();
     }
 
     return !path.equals(currentPage);
   }
 
-  private void scrollTo(String hash) {
-    Window.scrollTo(Window.getScrollLeft(), $(hash).offset().top);
+  private void bindPopState() {
+    if (isPushstateCapable) {
+      // Note: gQuery will support $(window).on("popstate", function) in future releases.
+      window.<Properties>cast().setFunction("onpopstate", new Function() {
+        public void f() {
+          loadPage(Window.Location.getPath(), false);
+        };
+      });
+    }
   }
-
-  private void onPopState() {
-    loadPage(Window.Location.getPath(), false);
-  }
-
-  private native void pushState(String url) /*-{
-    $wnd.history.pushState(null, null, url);
-  }-*/;
-
-  private native boolean supportsHtml5History()/*-{
-    return !!($wnd.history && $wnd.history.pushState);
-  }-*/;
-
-  private native void initOnPopState() /*-{
-    var that = this;
-    $wnd.onpopstate = $entry(function(e) {
-      that.@com.google.gwt.site.webapp.client.GWTProjectEntryPoint::onPopState()();
-    });
-  }-*/;
 }
