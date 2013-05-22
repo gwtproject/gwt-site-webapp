@@ -15,8 +15,6 @@
  */
 package com.google.gwt.site.webapp.client;
 
-import static com.google.gwt.query.client.GQuery.*;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.query.client.Function;
 import com.google.gwt.query.client.GQuery;
@@ -26,46 +24,51 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 
+import static com.google.gwt.query.client.GQuery.$;
+import static com.google.gwt.query.client.GQuery.body;
+import static com.google.gwt.query.client.GQuery.window;
+
 public class GWTProjectEntryPoint implements EntryPoint {
 
   private static final RegExp isSameOriginRexp;
+  private static Properties history = JsUtils.prop(window, "history");
+  private static boolean isPushstateCapable = history.get("pushState") != null;
   static {
     // XHR must match all: protocol, host and port.
     // Note: in chrome this could be simpler since it has window.location.origin
-    String origin = Window.Location.getProtocol() + "//" +  Window.Location.getHostName();
+    String origin = Window.Location.getProtocol() + "//" + Window.Location.getHostName();
     String port = Window.Location.getPort();
     if (port != null && port.length() > 0) {
       origin += ":" + port;
     }
-    // We discard links with a different origin, and hash links.
-    isSameOriginRexp = RegExp.compile("^" + origin + "|^(?!(https?|mailto|ftp|javascript):|#).+", "i");
+    // We discard links with a different origin, hash links and protocol-agnostic urls.
+    isSameOriginRexp = RegExp.compile("^" + origin + "|^(?!(https?|mailto|ftp|javascript):|#|//).+", "i");
   }
-
   private String currentPage;
-  private static Properties history = JsUtils.prop(window, "history");
-  private static boolean isPushstateCapable = $(history).prop("pushState") != null;
 
   @Override
   public void onModuleLoad() {
     enhanceMenu();
 
-    openMenu(Window.Location.getPath());
+    openMenu();
 
-    bindPopState();
+    maybeBindPopState();
+
+    currentPage = Window.Location.getPath();
   }
 
-  private void openMenu(String path) {
+  private void openMenu() {
     $("#gwt-toc a.selected").removeClass("selected");
 
-    if (path != null && path.length() > 0) {
-      $("#gwt-toc a[ahref$='" + path + "']")
+    String path = Window.Location.getPath();
+
+    $("#gwt-toc a[ahref$='" + path + "']")
         .addClass("selected")
         .parentsUntil("#gwt-toc")
         .filter("li.folder")
         .addClass("open")
         .children("ul")
         .slideDown(200);
-    }
   }
 
   private void enhanceMenu() {
@@ -85,8 +88,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
         // Sometimes the link src comes in the 'ahref' attribute
         String href = JsUtils.or($(e).attr("ahref"), $(e).attr("href"));
 
-        // if loadPage returns true we don't stop propagation nor default
-        return loadPage(href, true);
+        if (isPushstateCapable && isSameOriginRexp.test(href)) {
+          loadPage(href);
+          return false;
+        }
+        return true;
       }
     });
   }
@@ -97,50 +103,54 @@ public class GWTProjectEntryPoint implements EntryPoint {
         .slideToggle(200);
   }
 
-  private boolean loadPage(final String pageUrl, final boolean pushState) {
-    if (!isSameOriginRexp.test(pageUrl)) {
-      return true;
+  private void loadPage(String pageUrl) {
+    if (pageUrl != null) {
+      JsUtils.runJavascriptFunction(history, "pushState", null, null, pageUrl);
     }
 
-    int hashIndex = pageUrl.indexOf('#');
-    final String path = hashIndex != -1 ? pageUrl.substring(0, hashIndex)
-        : pageUrl;
-    final String hash = hashIndex != -1 ? pageUrl.substring(hashIndex)
-        : null;
+    String path = Window.Location.getPath();
+    final String hash = Window.Location.getHash();
 
-    if (isPushstateCapable && !path.equals(currentPage)) {
+    if (!path.equals(currentPage)) {
       currentPage = path;
 
-      if (pushState) {
-        JsUtils.runJavascriptFunction(history, "pushState", null, null, pageUrl);
-      }
-
-      $("#gwt-content").load(pageUrl + " #gwt-content > div", null,
+      $("#gwt-content").load(path + " #gwt-content > div", null,
           new Function() {
             @Override
             public void f() {
-              if (hash != null) {
-                $(hash).scrollIntoView();
-              }
-              openMenu(path);
+              scrollTo(hash);
+              openMenu();
             }
           });
 
-    } else if (hash != null) {
-      $(hash).scrollIntoView();
+    } else {
+      scrollTo(hash);
     }
-
-    return !path.equals(currentPage);
   }
 
-  private void bindPopState() {
-    if (isPushstateCapable) {
-      // Note: gQuery will support $(window).on("popstate", function) in future releases.
-      window.<Properties>cast().setFunction("onpopstate", new Function() {
-        public void f() {
-          loadPage(Window.Location.getPath(), false);
-        };
-      });
+  private void scrollTo(String hash) {
+    if (hash == null || hash.length() == 0) {
+      Window.scrollTo(0, 0);
+    } else {
+      GQuery anchor = $(hash);
+      if (anchor.isEmpty()) {
+        anchor = $("[name='" + hash.substring(1) + "']");
+      }
+
+      anchor.scrollIntoView();
     }
+  }
+
+  private void maybeBindPopState() {
+    if (!isPushstateCapable) {
+      return;
+    }
+
+    // Note: gQuery will support $(window).on("popstate", function) in future releases.
+    window.<Properties>cast().setFunction("onpopstate", new Function() {
+      public void f() {
+        loadPage(null);
+      };
+    });
   }
 }
