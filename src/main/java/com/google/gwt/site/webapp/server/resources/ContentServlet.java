@@ -64,7 +64,6 @@ public class ContentServlet extends HttpServlet {
       resp.getWriter().write(html);
 
     }
-
   }
 
   private void setContentTypeByFileEnding(HttpServletResponse resp, String fullPath) {
@@ -88,7 +87,7 @@ public class ContentServlet extends HttpServlet {
       return;
     }
 
-    if (fullPath.endsWith(".jpg")) {
+    if (fullPath.endsWith(".jpg") || fullPath.endsWith(".jpeg")) {
       resp.setContentType("image/jpg");
       return;
     }
@@ -99,11 +98,11 @@ public class ContentServlet extends HttpServlet {
     }
 
     // TODO: what is a good default value?
-
   }
 
   private boolean isBinaryFile(String path) {
-    return path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".gif");
+    return path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".jpeg")
+        || path.endsWith(".gif");
   }
 
   private String normalizePath(String fullPath) {
@@ -113,7 +112,7 @@ public class ContentServlet extends HttpServlet {
     if ("".equals(fullPath) || fullPath.endsWith("/")) {
       fullPath += "index.html";
     }
-    
+
     return fullPath;
   }
 }
