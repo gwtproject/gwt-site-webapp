@@ -36,18 +36,26 @@ public class ContentServlet extends HttpServlet {
   private static final long serialVersionUID = 458719890608890896L;
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+      IOException {
 
     String fullPath = normalizePath(req.getRequestURI());
 
-    Key key = KeyFactory.createKey("DocModel", fullPath);
-    Query query = new Query("DocModel", key);
-    Entity e = datastore.prepare(query).asSingleEntity();
+    Entity e = getResourceByKey(fullPath);
 
     if (e == null) {
+      // temporary try to find the resource with .html appended
+      // due to redirects from developers.google.com
+      if (!fullPath.endsWith("/")) {
+        fullPath = fullPath + ".html";
+        e = getResourceByKey(fullPath);
+        if (e != null) {
+          // redirect so we use correct urls!
+          resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+          resp.setHeader("Location", "/" + fullPath);
+          return;
+        }
+      }
       resp.sendError(404);
       return;
     }
@@ -62,8 +70,14 @@ public class ContentServlet extends HttpServlet {
 
     } else {
       resp.getWriter().write(html);
-
     }
+  }
+
+  private Entity getResourceByKey(String key) {
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Key keyInstance = KeyFactory.createKey("DocModel", key);
+    Query query = new Query("DocModel", keyInstance);
+    return datastore.prepare(query).asSingleEntity();
   }
 
   private void setContentTypeByFileEnding(HttpServletResponse resp, String fullPath) {
