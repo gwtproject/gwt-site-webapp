@@ -88,6 +88,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
         // Sometimes the link src comes in the 'ahref' attribute
         String href = JsUtils.or($(e).attr("ahref"), $(e).attr("href"));
 
+	//do not load javadoc async
+        if(href.startsWith("/javadoc/")) {
+          return true;
+        }
+
         if (isPushstateCapable && isSameOriginRexp.test(href)) {
           loadPage(href);
           return false;
