@@ -17,6 +17,7 @@ package com.google.gwt.site.webapp.server.guice;
 
 import com.google.apphosting.utils.remoteapi.RemoteApiServlet;
 import com.google.gwt.site.webapp.server.resources.ContentServlet;
+import com.google.gwt.site.webapp.server.resources.HashServlet;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 
@@ -31,8 +32,10 @@ public class MyServletModule extends ServletModule {
     //docs
     bind(RemoteApiServlet.class).in(Singleton.class);
     bind(ContentServlet.class).in(Singleton.class);
+    bind(HashServlet.class).in(Singleton.class);
     
     serve("/remote_api").with( RemoteApiServlet.class);
+    serve("/hash").with( HashServlet.class);
     serve("/*").with( ContentServlet.class);
     
 //    Map<String, String> params = new HashMap<String, String>();
