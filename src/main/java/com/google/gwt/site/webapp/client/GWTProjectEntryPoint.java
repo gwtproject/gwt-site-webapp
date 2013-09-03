@@ -159,9 +159,10 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     // Note: gQuery will support $(window).on("popstate", function) in future releases.
     window.<Properties>cast().setFunction("onpopstate", new Function() {
+      @Override
       public void f() {
         loadPage(null);
-      };
+      }
     });
   }
 }
