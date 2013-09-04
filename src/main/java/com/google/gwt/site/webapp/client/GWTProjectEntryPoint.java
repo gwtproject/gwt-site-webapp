@@ -85,10 +85,16 @@ public class GWTProjectEntryPoint implements EntryPoint {
     $("a", body).live(Event.ONCLICK, new Function() {
       @Override
       public boolean f(Event e) {
+        // do not load links that are marked as full page reload
+        String async = $(e).attr("data-full-load");
+        if("true".equals(async)) {
+          return true;
+        }
+
         // Sometimes the link src comes in the 'ahref' attribute
         String href = JsUtils.or($(e).attr("ahref"), $(e).attr("href"));
 
-	//do not load javadoc async
+        //do not load javadoc async
         if(href.startsWith("/javadoc/")) {
           return true;
         }
