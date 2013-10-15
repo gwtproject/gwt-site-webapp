@@ -111,6 +111,11 @@ public class ContentServlet extends HttpServlet {
       return;
     }
 
+    if (fullPath.endsWith("/package-list")) {
+      resp.setContentType("text/plain");
+      return;
+    }
+
     // TODO: what is a good default value?
   }
 
