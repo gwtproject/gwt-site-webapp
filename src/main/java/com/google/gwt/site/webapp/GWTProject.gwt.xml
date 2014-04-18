@@ -13,4 +13,8 @@
     <!-- change to localhost for development -->
     <set-configuration-property name="includeSourceMapUrl" 
     	value="http://www.gwtproject.org/src/__HASH___sourceMap__FRAGMENT__.json"/>
+
+    <set-configuration-property name="installCode" value="false"/>
+    <!-- remove after fix to issue 8630 lands -->
+    <set-configuration-property name="installScriptJs" value="com/google/gwt/core/ext/linker/impl/installScriptDirect.js"/>
 </module>
