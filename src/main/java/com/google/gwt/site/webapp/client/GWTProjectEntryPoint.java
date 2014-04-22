@@ -15,8 +15,13 @@
  */
 package com.google.gwt.site.webapp.client;
 
+import static com.google.gwt.query.client.GQuery.$;
+import static com.google.gwt.query.client.GQuery.body;
+import static com.google.gwt.query.client.GQuery.window;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.query.client.Function;
 import com.google.gwt.query.client.GQuery;
 import com.google.gwt.query.client.Properties;
@@ -26,58 +31,67 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.impl.HyperlinkImpl;
 
-import static com.google.gwt.query.client.GQuery.$;
-import static com.google.gwt.query.client.GQuery.body;
-import static com.google.gwt.query.client.GQuery.window;
-
 public class GWTProjectEntryPoint implements EntryPoint {
 
-  private static final RegExp isSameOriginRexp;
+  private static final int ANIMATION_TIME = 200;
+
   private static final HyperlinkImpl clickHelper = GWT.create(HyperlinkImpl.class);
+
   private static Properties history = JsUtils.prop(window, "history");
+
+  // Visible for testing
+  // The absolute path to the url root (http://gwtproject.com)
+  static String origin = GWT.getModuleBaseForStaticFiles()
+      .replaceFirst("^(\\w+://.+?)/.*", "$1").toLowerCase();
+
+  // Visible for testing
+  // We discard links with different origin, hashes, starting with protocol, javadocs, and media links.
+  static final RegExp isSameOriginRexp = RegExp.compile("^" + origin
+      + "|^(?!(#|[a-z#]+:))(?!.*(|/)javadoc/)(?!.*\\.(jpe?g|png|mpe?g|mp[34]|avi)$)", "i");
+
   private static boolean isPushstateCapable = history.get("pushState") != null;
-
-  static {
-    // XHR must match all: protocol, host and port.
-    // Note: in chrome this could be simpler since it has window.location.origin
-    String origin = Window.Location.getProtocol() + "//" + Window.Location.getHostName();
-    String port = Window.Location.getPort();
-    if (port != null && port.length() > 0) {
-      origin += ":" + port;
-    }
-    // We discard links with a different origin, hash links and protocol-agnostic urls.
-    isSameOriginRexp = RegExp.compile("^" + origin + "|^(?!(https?|mailto|ftp|javascript):|#|//).+", "i");
-  }
-
-  private String currentPage;
+  private static boolean ajaxEnabled = isPushstateCapable && origin.startsWith("http");
+  private static String currentPage = Window.Location.getPath();
 
   @Override
   public void onModuleLoad() {
-    enhanceMenu();
-
+    enhancePage();
+    $("#gwt-toc li ul").hide();
     openMenu();
-
-    maybeBindPopState();
-
-    currentPage = Window.Location.getPath();
   }
 
+  /*
+   * Open the branch and select the item corresponding to the current url.
+   */
   private void openMenu() {
+    GQuery item = $("#gwt-toc a[href='" + Window.Location.getPath() + "']").eq(0);
+
+    // Only collapse unrelated entries in mobile
+    if ($("#nav-mobile").isVisible()) {
+       hideUnrelatedBranches(item);
+    }
+
+    showBranch(item);
+
     $("#gwt-toc a.selected").removeClass("selected");
+    item.addClass("selected");
 
-    String path = Window.Location.getPath();
-
-    $("#gwt-toc a[ahref$='" + path + "']")
-        .addClass("selected")
-        .parentsUntil("#gwt-toc")
-        .filter("li.folder")
-        .addClass("open")
-        .children("ul")
-        .slideDown(200);
+    // Change the page title for easy bookmarking
+    $("title").text("[GWT] " + item.text());
   }
 
-  private void enhanceMenu() {
-    $("li.folder > a").click(new Function() {
+  /*
+   * Enhance the page adding handlers and replacing relative by absolute urls
+   */
+  private void enhancePage() {
+
+    // We add a span with the +/- icon so as the click area is well defined
+    // this span is not rendered in server side because it is only needed
+    // for enhancing the page.
+    GQuery parentItems = $("#gwt-toc li").has("ul").prepend("<span/>");
+
+    // Toggle the branch when clicking on the arrow or anchor without content
+    $(parentItems).children("span, a[href='#']").on("click", new Function() {
       @Override
       public boolean f(Event e) {
         toggleMenu($(e).parent());
@@ -85,104 +99,124 @@ public class GWTProjectEntryPoint implements EntryPoint {
       }
     });
 
-    $("#gwt-toc li.folder > ul").hide();
+    // Replace relative paths in anchors by absolute ones
+    // exclude all anchors in the content area.
+    $("a").not($("#gwt-content a")).each(new Function() {
+      @Override
+      public void f(Element e) {
+        GQuery link = $(e);
+        if (shouldEnhanceLink(link)) {
+          // No need to make complicated things for computing
+          // the absolute path: anchor.pathname is the way
+          link.attr("href", link.prop("pathname"));
+        }
+      }
+    });
 
-    $("a", body).live(Event.ONCLICK, new Function() {
+    // Do not continue enhancing if Ajax is disabled
+    if (!ajaxEnabled) {
+      // Select current item from the URL info
+      loadPage(null);
+      return;
+    }
+
+    // Use Ajax instead of default behaviour
+    $(body).on("click", "a", new Function() {
       @Override
       public boolean f(Event e) {
-        String href = getHref($(e));
-        if (shouldEnhanceClick(e) && isPushstateCapable && isSameOriginRexp.test(href)) {
-          loadPage(href);
+        if (shouldEnhanceLink($(e)) &&
+            // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
+            clickHelper.handleAsClick(e)) {
+
+          // Load the page using Ajax
+          loadPage($(e));
           return false;
         }
         return true;
       }
     });
-  }
 
-  private boolean shouldEnhanceClick(Event e) {
-    GQuery link = $(e);
-
-    // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
-    if (!clickHelper.handleAsClick(e)) {
-      return false;
-    }
-
-    // do not load links that are marked as full page reload
-    if ("true".equals(link.attr("data-full-load"))) {
-      return false;
-    }
-
-    // do not load javadoc async
-    if (getHref(link).startsWith("/javadoc/")) {
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Sometimes the link src comes in the 'ahref' attribute
-   */
-  private String getHref(GQuery link) {
-    return  JsUtils.or(link.attr("ahref"), link.attr("href"));
-  }
-
-  private void toggleMenu(GQuery menu) {
-    menu.toggleClass("open")
-        .children("ul")
-        .slideToggle(200);
-  }
-
-  private void loadPage(String pageUrl) {
-    if (pageUrl != null) {
-      JsUtils.runJavascriptFunction(history, "pushState", null, null, pageUrl);
-    }
-
-    String path = Window.Location.getPath();
-    final String hash = Window.Location.getHash();
-
-    if (!path.equals(currentPage)) {
-      currentPage = path;
-
-      $("#gwt-content").load(path + " #gwt-content > div", null,
-          new Function() {
-            @Override
-            public void f() {
-              scrollTo(hash);
-              openMenu();
-            }
-          });
-
-    } else {
-      scrollTo(hash);
-    }
-  }
-
-  private void scrollTo(String hash) {
-    if (hash == null || hash.length() == 0) {
-      Window.scrollTo(0, 0);
-    } else {
-      GQuery anchor = $(hash);
-      if (anchor.isEmpty()) {
-        anchor = $("[name='" + hash.substring(1) + "']");
-      }
-
-      anchor.scrollIntoView();
-    }
-  }
-
-  private void maybeBindPopState() {
-    if (!isPushstateCapable) {
-      return;
-    }
-
-    // Note: gQuery will support $(window).on("popstate", function) in future releases.
-    window.<Properties>cast().setFunction("onpopstate", new Function() {
+    // Select the TOC item when URL changes
+    $(window).on("popstate", new Function() {
       @Override
       public void f() {
         loadPage(null);
       }
     });
+  }
+
+  private boolean shouldEnhanceLink(GQuery link) {
+    return
+      // Enhance only local links
+      isSameOriginRexp.test(link.attr("href")) &&
+      // Do not load links that are marked as full page reload
+      !Boolean.parseBoolean(link.attr("data-full-load"));
+  }
+
+  private void toggleMenu(GQuery menu) {
+    menu.toggleClass("open")
+      .children("ul")
+      .slideToggle(ANIMATION_TIME);
+  }
+
+  private void hideUnrelatedBranches(GQuery item) {
+    $("#gwt-toc li.open")
+      .not(item).not(item.parents())
+      .removeClass("open")
+      .children("ul")
+      .slideUp(ANIMATION_TIME);
+  }
+
+  private void showBranch(GQuery item) {
+    item.parents()
+      .filter("li")
+      .addClass("open")
+      .children("ul")
+      .slideDown(ajaxEnabled ? ANIMATION_TIME : 0);
+  }
+
+  /*
+   * Change URL via pushState and load the page via Ajax.
+   */
+  private void loadPage(GQuery link) {
+    String pageUrl = link == null ? null : link.<String>prop("pathname");
+
+    if (!currentPage.equals(pageUrl)) {
+      if (pageUrl != null) {
+        // Preserve QueryString, useful for the gwt.codesvr parameter in dev-mode.
+        pageUrl = pageUrl.replaceFirst("(#.*|)$", Window.Location.getQueryString() + "$1");
+        // Set the page to load in the URL
+        JsUtils.runJavascriptFunction(history, "pushState", null, null, pageUrl);
+      }
+
+      pageUrl = Window.Location.getPath();
+      if (!currentPage.equals(pageUrl)) {
+        $("#spinner").show();
+        $("#gwt-content").load(pageUrl + " #gwt-content > div", null, new Function() {
+          @Override
+          public void f() {
+            openMenu();
+            scrollToHash();
+            $("#spinner").hide();
+          }
+        });
+      } else {
+        scrollToHash();
+      }
+      currentPage = pageUrl;
+    }
+  }
+
+  /*
+   * Move the scroll to the hash fragment in the URL
+   */
+  private void scrollToHash() {
+    String hash = Window.Location.getHash();
+    GQuery anchor = hash.length() > 1 ? $(hash + ", [name='" + hash.substring(1) + "']") : $();
+    if (anchor.isEmpty()) {
+      Window.scrollTo(0, 0);
+    } else {
+      anchor.scrollIntoView();
+    }
   }
 }
