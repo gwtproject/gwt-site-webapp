@@ -113,6 +113,14 @@ public class GWTProjectEntryPoint implements EntryPoint {
       }
     });
 
+    // In mobile have a link for opening/closing the menu
+    $("#nav-mobile").on("click", new Function() {
+      @Override
+      public void f() {
+        $("#gwt-toc").toggleClass("show");
+      }
+    });
+
     // Do not continue enhancing if Ajax is disabled
     if (!ajaxEnabled) {
       // Select current item from the URL info
@@ -127,6 +135,9 @@ public class GWTProjectEntryPoint implements EntryPoint {
         if (shouldEnhanceLink($(e)) &&
             // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
             clickHelper.handleAsClick(e)) {
+
+          // In mobile, if menu is visible, close it
+          $("#gwt-toc.show").removeClass("show");
 
           // Load the page using Ajax
           loadPage($(e));
