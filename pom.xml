@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.google.gwt.site.webapp</groupId>
@@ -9,11 +9,27 @@
     <packaging>war</packaging>
 
     <properties>
-        <appengine.app.version>1</appengine.app.version>
-        <appengine.target.version>1.8.8</appengine.target.version>
+        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+        <appengine.app.version>${maven.build.timestamp}</appengine.app.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gwtversion>2.6.0</gwtversion>
+
+        <appengine.target.version>1.9.5</appengine.target.version>
+        <json.version>20140107</json.version>
+        <commons-codec.version>1.9</commons-codec.version>
+        <!-- javax -->
+        <servlet.version>2.5</servlet.version>
+
+        <gwt.version>2.6.1</gwt.version>
         <gwtquery.version>1.4.2</gwtquery.version>
+
+        <junit.version>4.11</junit.version>
+
+        <!-- plugin -->
+        <surefire-plugin.version>2.17</surefire-plugin.version>
+        <compiler-plugin.version>3.1</compiler-plugin.version>
+        <war-plugin.version>2.4</war-plugin.version>
+        <eclipse-plugin.version>2.9</eclipse-plugin.version>
+        <appengine.plugin.version>1.9.4</appengine.plugin.version>
     </properties>
 
     <dependencies>
@@ -26,35 +42,23 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
+            <version>${servlet.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jstl</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>1.9</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-grizzly2</artifactId>
-            <version>1.9</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20090211</version>
+            <version>${json.version}</version>
         </dependency>
-
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.7</version>
+            <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-servlet</artifactId>
+            <version>3.0</version>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -70,77 +74,30 @@
             <version>${appengine.target.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-guice</artifactId>
-            <version>1.7</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>javax.jdo</groupId>
-            <artifactId>jdo-api</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-core</artifactId>
-            <version>3.1.1</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-api-jdo</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.appengine.orm</groupId>
-            <artifactId>datanucleus-appengine</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-
+        <!-- UI dependencies -->
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
-            <version>${gwtversion}</version>
+            <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-            <classifier>sources</classifier>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>persistence-api</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>3.8.1</version>
-                <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <version>${gwtversion}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- UI dependencies -->
         <dependency>
             <groupId>com.googlecode.gwtquery</groupId>
             <artifactId>gwtquery</artifactId>
             <version>${gwtquery.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+            <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -154,23 +111,23 @@
                 <directory>${basedir}/src/test/resources</directory>
             </testResource>
         </testResources>
+
         <plugins>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>2.6</version>
-              <configuration>
-                 <additionalClasspathElements>
-                   <additionalClasspathElement>${basedir}/src/main/java</additionalClasspathElement>
-                   <additionalClasspathElement>${basedir}/src/test/java</additionalClasspathElement>
-                 </additionalClasspathElements>
-                 <useSystemClassLoader>false</useSystemClassLoader>
-              </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*GwtTest.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>2.5.1</version>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -180,7 +137,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
+                <version>${war-plugin.version}</version>
                 <configuration>
                     <!-- <archiveClasses>true</archiveClasses> -->
                     <webResources>
@@ -210,21 +167,22 @@
             <plugin>
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-maven-plugin</artifactId>
-                <version>${appengine.target.version}</version>
+                <version>${appengine.plugin.version}</version>
                 <configuration>
-                  <address>0.0.0.0</address>
+                    <version>${appengine.app.version}</version>
+                    <address>0.0.0.0</address>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.8</version>
-
+                <version>${eclipse-plugin.version}</version>
                 <configuration>
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>false</downloadJavadocs>
-                    <buildOutputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</buildOutputDirectory>
+                    <buildOutputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes
+                    </buildOutputDirectory>
                     <projectnatures>
                         <projectnature>org.eclipse.jdt.core.javanature</projectnature>
                         <projectnature>com.google.gdt.eclipse.core.webAppNature</projectnature>
@@ -234,11 +192,9 @@
                     <buildcommands>
                         <buildcommand>org.eclipse.jdt.core.javabuilder</buildcommand>
                         <buildcommand>com.google.gdt.eclipse.core.webAppProjectValidator</buildcommand>
-
                         <buildcommand>com.google.appengine.eclipse.core.projectValidator</buildcommand>
                         <buildcommand>com.google.gwt.eclipse.core.gwtProjectValidator</buildcommand>
                         <buildcommand>com.google.appengine.eclipse.core.enhancerbuilder</buildcommand>
-
                     </buildcommands>
                     <classpathContainers>
                         <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
@@ -259,43 +215,24 @@
                         <exclude>org.datanucleus:datanucleus-api-jdo</exclude>
                         <exclude>com.google.appengine.orm:datanucleus-appengine</exclude>
                     </excludes>
-
-
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.datanucleus</groupId>
-                <artifactId>maven-datanucleus-plugin</artifactId>
-                <version>3.1.2</version>
-                <configuration>
-                    <log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration>
-                    <verbose>false</verbose>
-                    <fork>false</fork>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>enhance</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>${gwtversion}</version>
+                <version>${gwt.version}</version>
                 <executions>
                     <execution>
                         <configuration>
-                            <module>com.google.gwt.site.webapp.GWTProject</module>
-                            <runTarget>index.html</runTarget>
-                            <copyWebapp>true</copyWebapp>
+                            <testTimeOut>180</testTimeOut>
+                            <includes>**/*GwtTest.java</includes>
+                            <mode>htmlunit</mode>
+                            <gen>gen</gen>
+                            <extraJvmArgs>-Xss1024k -Xmx512M -XX:MaxPermSize=512m</extraJvmArgs>
                             <saveSource>true</saveSource>
-                            <draftCompile>true</draftCompile>
-                            <style>PRETTY</style>
+                            <module>com.google.gwt.site.webapp.GWTProject</module>
+                            <style>OBF</style>
                         </configuration>
                         <goals>
                             <goal>compile</goal>
@@ -306,5 +243,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

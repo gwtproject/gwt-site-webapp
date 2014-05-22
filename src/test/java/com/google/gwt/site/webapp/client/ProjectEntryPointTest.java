@@ -5,7 +5,7 @@ import com.google.gwt.regexp.shared.RegExp;
 /**
  * Test class for the GWTProject entry-point running in JVM
  */
-public class JREProjectEntryPointTest extends GWTTestCase {
+public class ProjectEntryPointTest extends GWTTestCase {
 
   public String getModuleName() {
     return null;
