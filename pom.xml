@@ -100,6 +100,13 @@
             <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.gwt.site</groupId>
+            <artifactId>gwt-site</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <classifier>generated-site</classifier>
+         </dependency>
     </dependencies>
 
     <build>
@@ -238,6 +245,44 @@
                             <goal>compile</goal>
                             <goal>test</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeGroupIds>com.google.gwt.site</includeGroupIds>
+                            <includeArtifactIds>gwt-site</includeArtifactIds>
+                             <excludeTransitive>true</excludeTransitive>
+                            <outputDirectory>${project.build.directory}/www/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/www/gwtproject/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/${project.artifactId}-${project.version}/gwtproject/</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
