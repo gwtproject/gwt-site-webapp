@@ -21,12 +21,11 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class ContentServlet extends HttpServlet {
 
@@ -113,6 +112,11 @@ public class ContentServlet extends HttpServlet {
 
     if (fullPath.endsWith("/package-list")) {
       resp.setContentType("text/plain");
+      return;
+    }
+
+    if (fullPath.endsWith(".dtd")) {
+      resp.setContentType("application/xml-dtd");
       return;
     }
 
