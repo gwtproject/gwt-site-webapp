@@ -35,6 +35,7 @@ import com.google.gwt.query.client.Properties;
 import com.google.gwt.query.client.js.JsUtils;
 import com.google.gwt.query.client.plugins.ajax.Ajax;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.site.webapp.client.highlight.JsHighlight;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.impl.HyperlinkImpl;
@@ -73,6 +74,15 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     onPageLoaded(false);
     $(".holder").show();
+  }
+
+  private void highLight() {
+    JsHighlight.INSTANCE.initialize();
+    $("pre > code").each(new Function(){
+      public void f(Element e) {
+        JsHighlight.INSTANCE.highlightBlock(e);
+      }
+    });
   }
 
   private void bindSearch() {
@@ -344,6 +354,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
     scrollToHash();
     $("#spinner").hide();
     $("#editLink").appendTo("#content h1");
+    // highlight loaded page
+    highLight();
   }
 
   /*
