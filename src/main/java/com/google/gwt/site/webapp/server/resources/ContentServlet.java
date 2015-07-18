@@ -63,6 +63,7 @@ public class ContentServlet extends HttpServlet {
     String html = ((Text) e.getProperty("html")).getValue();
 
     setContentTypeByFileEnding(resp, fullPath);
+    resp.setCharacterEncoding("utf-8");
 
     if (isBinaryFile(fullPath)) {
       byte[] decodeBase64 =
