@@ -178,6 +178,10 @@
                 <configuration>
                     <version>${appengine.app.version}</version>
                     <address>0.0.0.0</address>
+                    <email>${gaeAccount}</email>
+                    <oauth2>false</oauth2>
+                    <noCookies>true</noCookies>
+                    <passin>true</passin>
                 </configuration>
             </plugin>
 
