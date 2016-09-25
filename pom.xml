@@ -13,7 +13,7 @@
         <appengine.app.version>${maven.build.timestamp}</appengine.app.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <appengine.target.version>1.9.5</appengine.target.version>
+        <appengine.target.version>1.9.42</appengine.target.version>
         <json.version>20140107</json.version>
         <commons-codec.version>1.9</commons-codec.version>
         <!-- javax -->
@@ -29,7 +29,7 @@
         <compiler-plugin.version>3.1</compiler-plugin.version>
         <war-plugin.version>2.4</war-plugin.version>
         <eclipse-plugin.version>2.9</eclipse-plugin.version>
-        <appengine.plugin.version>1.9.4</appengine.plugin.version>
+        <appengine.plugin.version>1.9.42</appengine.plugin.version>
     </properties>
 
     <dependencies>
