@@ -150,7 +150,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
     liParents.add(selectedItem).not(selectedItem.parent()).addClass("active");
 
     // Change the page title for easy bookmarking
-    $("title").text("[GWT] " + subMenuItem.text());
+    $("title").text("[GWT] " + subMenuItem.children("a").text() + " - " + selectedItem.text());
 
     boolean homePage = isHomePage(path);
     boolean overviewPage = isOverviewPage(path);
