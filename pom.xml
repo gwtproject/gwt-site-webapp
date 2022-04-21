@@ -12,8 +12,8 @@
         <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <gwt.version>2.7.0</gwt.version>
-        <gwtquery.version>1.4.2</gwtquery.version>
+        <gwt.version>2.8.2</gwt.version>
+        <gwtquery.version>1.5-beta1</gwtquery.version>
 
         <junit.version>4.11</junit.version>
 
