@@ -6,7 +6,7 @@
     <groupId>com.google.gwt.site.webapp</groupId>
     <artifactId>gwt-site-webapp</artifactId>
     <version>2.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>gwt-app</packaging>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
@@ -20,7 +20,6 @@
         <!-- plugin -->
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <compiler-plugin.version>3.1</compiler-plugin.version>
-        <war-plugin.version>2.4</war-plugin.version>
     </properties>
 
     <dependencies>
@@ -37,19 +36,21 @@
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
             <version>${gwt.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.googlecode.gwtquery</groupId>
             <artifactId>gwtquery</artifactId>
             <version>${gwtquery.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-dev</artifactId>
             <version>${gwt.version}</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-codeserver</artifactId>
+            <version>${gwt.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt.site</groupId>
@@ -70,17 +71,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*GwtTest.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
@@ -90,57 +80,23 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${war-plugin.version}</version>
-                <configuration>
-                    <!-- <archiveClasses>true</archiveClasses> -->
-                    <webResources>
-                        <!-- copy GWT source code to website for debugging -->
-                        <resource>
-                            <directory>${basedir}/target/extra/gwtproject/src</directory>
-                            <targetPath>src</targetPath>
-                        </resource>
-                        <!-- copy sourcemaps to website for debugging -->
-                        <resource>
-                            <directory>${basedir}/target/extra/gwtproject/symbolMaps</directory>
-                            <includes>
-                                <include>*.json</include>
-                            </includes>
-                            <targetPath>src</targetPath>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>net.ltgt.gwt.maven</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>${gwt.version}</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <testTimeOut>180</testTimeOut>
-                            <includes>**/*GwtTest.java</includes>
-                            <mode>htmlunit</mode>
-                            <gen>gen</gen>
-                            <extraJvmArgs>-Xss1024k -Xmx512M -XX:MaxPermSize=512m</extraJvmArgs>
-                            <saveSource>true</saveSource>
-                            <module>com.google.gwt.site.webapp.GWTProject</module>
-                            <!--
-                            Draft and pretty mode are turned on so that beginners can try out debugging
-                            in their browser with no setup.
-                            Please don't disable this; code size is less important.
-                            -->
-                            <draftCompile>true</draftCompile>
-                            <style>PRETTY</style>
-                        </configuration>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>1.0.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <moduleName>com.google.gwt.site.webapp.GWTProject</moduleName>
+                    <compilerArgs>
+                        <arg>-saveSource</arg>
+                    </compilerArgs>
+                    <draftCompile>true</draftCompile>
+                    <style>PRETTY</style>
+                    <launcherDir>${project.build.directory}/www</launcherDir>
+                    <extra>${project.build.directory}/extra</extra>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -154,7 +110,7 @@
                         <configuration>
                             <includeGroupIds>com.google.gwt.site</includeGroupIds>
                             <includeArtifactIds>gwt-site</includeArtifactIds>
-                             <excludeTransitive>true</excludeTransitive>
+                            <excludeTransitive>true</excludeTransitive>
                             <outputDirectory>${project.build.directory}/www/</outputDirectory>
                         </configuration>
                     </execution>
@@ -164,7 +120,34 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
+                        <!-- Copy results necessary for sourcemaps to work to the packaging output -->
+                        <id>copy-sourcemap-resources</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
+                            <resources>
+                                <!-- copy GWT source code to website for debugging -->
+                                <resource>
+                                    <directory>${project.build.directory}/extra/gwtproject/src</directory>
+                                    <targetPath>src</targetPath>
+                                </resource>
+                                <!-- copy sourcemaps to website for debugging -->
+                                <resource>
+                                    <directory>${project.build.directory}/extra/gwtproject/symbolMaps</directory>
+                                    <includes>
+                                        <include>*.json</include>
+                                    </includes>
+                                    <targetPath>src</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- Along with the dependency:unpack-dependencies, this generates a complete site to test with -->
+                        <id>copy-www-resources</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-resources</goal>

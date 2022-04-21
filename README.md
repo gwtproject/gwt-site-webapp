@@ -27,26 +27,11 @@
 
         $ mvn test
 
-- **Develop and Deploy**. This app is thought to be run in GAE servers, so it comes with all dependencies for it.
+- **Develop and Deploy**.
 
-  * To start the app using the [App Engine Maven Plugin](http://code.google.com/p/appengine-maven-plugin/) included in this project, just run the command:
-
-            $ mvn appengine:devserver
-
-  * You might upload the gwt stuff to the local developer server, just open another terminal,
-  go to the `gwt-site-uploader` folder project and run:
-
-            $ cd [...]/gwt-site-uploader
-            $ sh upload.sh localhost
-
-  * If you wanted to deploy to production, you might change the `<application>` section in the
-  `src/main/webapp/WEB-INF/appengine-web.xml` to point to the appropriate GAE instance and
-  then deploy to Google servers running:
-
-            $ mvn appengine:update -DgaeAccount=your_google_account
-
-  * For further information about GAE, consult the [Java App Engine](https://developers.google.com/appengine/docs/java/overview) documentation.
-
-      To see all the available goals for the App Engine plugin, run
-
-            $ mvn help:describe -Dplugin=appengine
+  * The `target/gwt-site-webapp-<version>.war` file contains only the generated JavaScript,
+  and can be deployed along with the generated site content, but source maps will not work
+  properly.
+  * The `target/www` directory contains the generated JavaScript, sourcemaps (and Java sources),
+  and the generated HTML from gwt-site itself, and is suitable for deployment directly to a
+  server.
