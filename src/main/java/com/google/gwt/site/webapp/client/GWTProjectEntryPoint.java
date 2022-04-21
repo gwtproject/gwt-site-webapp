@@ -142,7 +142,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
     GQuery subMenuItem = liParents.last();
 
     subMenuItem.show();
-    String mainNavigationHref = subMenuItem.children("a").attr("href");
+    GQuery section = subMenuItem.children("a");
+    String mainNavigationHref = section.attr("href");
 
     $("#nav a.active").removeClass("active");
     $("#nav a[href='" + mainNavigationHref + "']").addClass("active");
@@ -150,7 +151,11 @@ public class GWTProjectEntryPoint implements EntryPoint {
     liParents.add(selectedItem).not(selectedItem.parent()).addClass("active");
 
     // Change the page title for easy bookmarking
-    $("title").text("[GWT] " + subMenuItem.children("a").text() + " - " + selectedItem.text());
+    if (section.isEmpty()) {
+      $("title").text("GWT Project Homepage");
+    } else {
+      $("title").text("[GWT] " + section.text() + " - " + selectedItem.text());
+    }
 
     boolean homePage = isHomePage(path);
     boolean overviewPage = isOverviewPage(path);
