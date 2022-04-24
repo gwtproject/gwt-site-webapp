@@ -152,7 +152,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     // Change the page title for easy bookmarking
     if (section.isEmpty()) {
-      $("title").text("GWT Project Homepage");
+      $("title").text("GWT Project");
     } else {
       $("title").text("[GWT] " + section.text() + " - " + selectedItem.text());
     }
