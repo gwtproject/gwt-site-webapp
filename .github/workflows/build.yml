@@ -1,0 +1,46 @@
+name: Build gwt-site-webapp
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with: # TODO drop this once we update to GWT 2.8.2+
+          java-version: '8'
+          distribution: 'adopt'
+
+#      - name: Copy gwt-site artifact and mvn install:install-file it locally
+        # TODO implement with https://github.com/dawidd6/action-download-artifact
+        #      instead, or use a mvn repo for the artifact
+      - name: Checkout the gwt-site repo
+        uses: actions/checkout@v2
+        with:
+          repository: 'gwtproject/gwt-site'
+          path: 'gwt-site'
+      - name: Build gwt-site and install it, so we have static content
+        run: cd gwt-site && mvn --batch-mode install -Pgrunt
+
+      - name: Checkout the actual gwt-site-webapp repo
+        uses: actions/checkout@v2
+      - name: Build the JavaScript and sourcemaps for gwtproject.org
+        run: mvn --batch-mode verify
+      - name: Upload the generated JS and sourcemaps
+        # TODO once the server code has been removed (gwt-site-webapp#3), this path
+        #      doesn't need to be as specific
+        uses: actions/upload-artifact@v3
+        with:
+          name: 'gwt-site-webapp'
+          path: |
+            target/gwt-site-webapp-*/gwtproject/**
+            target/gwt-site-webapp-*/src/**
+      - name: Upload the entire site for easy review
+        uses: actions/upload-artifact@v3
+        with:
+          name: 'www'
+          path: 'target/www'
+          retention-days: 7
