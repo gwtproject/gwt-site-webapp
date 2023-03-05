@@ -75,7 +75,7 @@
             <plugin>
                 <groupId>net.ltgt.gwt.maven</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <moduleName>com.google.gwt.site.webapp.GWTProject</moduleName>
@@ -84,6 +84,7 @@
                     </compilerArgs>
                     <draftCompile>true</draftCompile>
                     <style>PRETTY</style>
+                    <failOnError>true</failOnError>
                     <launcherDir>${project.build.directory}/www</launcherDir>
                     <extra>${project.build.directory}/extra</extra>
                     <includes>
