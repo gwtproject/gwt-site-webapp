@@ -1,7 +1,7 @@
 name: Build gwt-site-webapp
 on:
   push:
-  #  branches: ['main']
+    branches: ['main']
   pull_request:
 
 jobs:
@@ -15,7 +15,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: 'maven'
-
 
       - name: Compile the webapp to JS
         run: mvn --batch-mode -e verify
