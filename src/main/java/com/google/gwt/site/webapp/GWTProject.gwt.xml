@@ -12,7 +12,7 @@
     <set-property name="compiler.useSourceMaps" value="true"/>
     <!-- change to localhost for development -->
     <set-configuration-property name="includeSourceMapUrl" 
-    	value="http://www.gwtproject.org/src/__HASH___sourceMap__FRAGMENT__.json"/>
+    	value="https://www.gwtproject.org/src/__HASH___sourceMap__FRAGMENT__.json"/>
 
     <set-configuration-property name="installCode" value="false"/>
     <!-- remove after fix to issue 8630 lands -->
