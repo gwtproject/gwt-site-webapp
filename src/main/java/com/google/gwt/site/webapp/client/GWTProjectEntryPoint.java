@@ -243,7 +243,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
         if (shouldEnhanceLink(link)) {
           // No need to make complicated things for computing
           // the absolute path: anchor.pathname is the way
-          link.attr("href", link.prop("pathname"));
+          link.attr("href", link.<Object>prop("pathname"));
         }
       }
     });
