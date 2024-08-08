@@ -417,8 +417,9 @@ public class GWTProjectEntryPoint implements EntryPoint {
     scrollToHash();
     forEach("#spinner", spinner -> spinner.style.display = "none");
     HTMLElement editLink = querySelector("#editLink");
-    if (editLink != null) {
-      querySelector("#content h1").appendChild(editLink);
+    HTMLElement heading = querySelector("#content h1");
+    if (editLink != null && heading != null) {
+      heading.appendChild(editLink);
     }
     // highlight loaded page
     highLight();
