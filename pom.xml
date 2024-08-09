@@ -6,7 +6,7 @@
     <groupId>com.google.gwt.site.webapp</groupId>
     <artifactId>gwt-site-webapp</artifactId>
     <version>2.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>gwt-app</packaging>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
@@ -19,7 +19,6 @@
         <!-- plugin -->
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <compiler-plugin.version>3.1</compiler-plugin.version>
-        <war-plugin.version>3.4.0</war-plugin.version>
     </properties>
 
     <dependencies>
@@ -36,7 +35,6 @@
             <groupId>org.gwtproject</groupId>
             <artifactId>gwt-user</artifactId>
             <version>${gwt.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.elemental2</groupId>
@@ -47,15 +45,12 @@
             <groupId>org.gwtproject</groupId>
             <artifactId>gwt-dev</artifactId>
             <version>${gwt.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.google.gwt.site</groupId>
-            <artifactId>gwt-site</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <classifier>generated-site</classifier>
-         </dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-codeserver</artifactId>
+            <version>${gwt.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -68,17 +63,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*GwtTest.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
@@ -88,91 +72,51 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${war-plugin.version}</version>
-                <configuration>
-                    <!-- <archiveClasses>true</archiveClasses> -->
-                    <webResources>
-                        <!-- copy GWT source code to website for debugging -->
-                        <resource>
-                            <directory>${basedir}/target/extra/gwtproject/src</directory>
-                            <targetPath>src</targetPath>
-                        </resource>
-                        <!-- copy sourcemaps to website for debugging -->
-                        <resource>
-                            <directory>${basedir}/target/extra/gwtproject/symbolMaps</directory>
-                            <includes>
-                                <include>*.json</include>
-                            </includes>
-                            <targetPath>src</targetPath>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>net.ltgt.gwt.maven</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>2.10.0</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <testTimeOut>180</testTimeOut>
-                            <includes>**/*GwtTest.java</includes>
-                            <mode>htmlunit</mode>
-                            <gen>gen</gen>
-                            <extraJvmArgs>-Xss1024k -Xmx512M</extraJvmArgs>
-                            <saveSource>true</saveSource>
-                            <sourceLevel>8</sourceLevel>
-                            <module>com.google.gwt.site.webapp.GWTProject</module>
-                            <!--
-                            Draft and pretty mode are turned on so that beginners can try out debugging
-                            in their browser with no setup.
-                            Please don't disable this; code size is less important.
-                            -->
-                            <draftCompile>true</draftCompile>
-                            <style>PRETTY</style>
-                        </configuration>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack-dependencies</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeGroupIds>com.google.gwt.site</includeGroupIds>
-                            <includeArtifactIds>gwt-site</includeArtifactIds>
-                             <excludeTransitive>true</excludeTransitive>
-                            <outputDirectory>${project.build.directory}/www/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>1.0.1</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <moduleName>com.google.gwt.site.webapp.GWTProject</moduleName>
+                    <compilerArgs>
+                        <arg>-saveSource</arg>
+                    </compilerArgs>
+                    <draftCompile>true</draftCompile>
+                    <style>PRETTY</style>
+                    <failOnError>true</failOnError>
+                    <launcherDir>${project.build.directory}/www</launcherDir>
+                    <extra>${project.build.directory}/extra</extra>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <enableAssertions>false</enableAssertions>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
+                        <!-- Copy results necessary for sourcemaps to work to the packaging output -->
+                        <id>copy-sourcemap-resources</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/www/gwtproject/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
                             <resources>
+                                <!-- copy GWT source code to website for debugging -->
                                 <resource>
-                                    <directory>${project.build.directory}/${project.artifactId}-${project.version}/gwtproject/</directory>
+                                    <directory>${project.build.directory}/extra/gwtproject/src</directory>
+                                    <targetPath>src</targetPath>
+                                </resource>
+                                <!-- copy sourcemaps to website for debugging -->
+                                <resource>
+                                    <directory>${project.build.directory}/extra/gwtproject/symbolMaps</directory>
+                                    <includes>
+                                        <include>*.json</include>
+                                    </includes>
+                                    <targetPath>src</targetPath>
                                 </resource>
                             </resources>
                         </configuration>
@@ -181,4 +125,65 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <!--
+            Generates a full working site for testing, by unpacking the
+            markdown along with this project's own output.
+            -->
+            <id>full-site</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.google.gwt.site</groupId>
+                    <artifactId>gwt-site</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                    <classifier>generated-site</classifier>
+                 </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-dependencies</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <includeGroupIds>com.google.gwt.site</includeGroupIds>
+                                    <includeArtifactIds>gwt-site</includeArtifactIds>
+                                    <excludeTransitive>true</excludeTransitive>
+                                    <outputDirectory>${project.build.directory}/www/</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Along with the dependency:unpack-dependencies, this generates a complete site to test with -->
+                                <id>copy-www-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/www/</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.build.directory}/${project.artifactId}-${project.version}/</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

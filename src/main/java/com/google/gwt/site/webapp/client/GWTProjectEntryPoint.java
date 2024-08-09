@@ -288,6 +288,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
     // Replace relative paths in anchors by absolute ones
     // exclude all anchors in the conHighlight and collapse menutent area.
     // TODO could be done on server side
+
     forEach("a", el -> {
        if (el.closest("#content") != null) {
          return;
