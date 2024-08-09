@@ -144,7 +144,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
    * Open the branch and select the item corresponding to the current url.
    */
   private void openMenu() {
-     // close all submenus
+    // close all submenus
     // todo hide first anchor with css
     forEach("#submenu > nav > ul > li", el -> {
       el.style.display = "none";
