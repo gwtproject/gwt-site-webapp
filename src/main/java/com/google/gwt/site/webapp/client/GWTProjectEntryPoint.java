@@ -15,7 +15,6 @@
  */
 package com.google.gwt.site.webapp.client;
 
-import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -24,12 +23,11 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.site.webapp.client.highlight.JsHighlight;
 import com.google.gwt.user.client.Window;
 import elemental2.dom.*;
+import jsinterop.annotations.JsFunction;
 import jsinterop.base.Js;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static elemental2.dom.DomGlobal.*;
 
@@ -63,8 +61,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private void slideDown(HTMLElement el, int animationTime) {
-      el.style.display = "";
-      animateMaxHeight(el, 0, estimateHeight(el), animationTime);
+    el.style.display = "";
+    animateMaxHeight(el, 0, estimateHeight(el), animationTime);
   }
 
   private void slideUp(HTMLElement el, int animationTime) {
@@ -94,7 +92,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
       });
       el.dataset.set("transitionListener", "true");
     }
-    setTimeout((ignore)-> el.style.setProperty("max-height", to + "px"),0);
+    setTimeout((ignore) -> el.style.setProperty("max-height", to + "px"), 0);
   }
 
   @Override
@@ -109,7 +107,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private HTMLElement querySelector(String selector) {
-    return Js.uncheckedCast(document.querySelector(selector));
+    return (HTMLElement) document.querySelector(selector);
   }
 
   private void highLight() {
@@ -120,7 +118,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   private void bindSearch() {
     HTMLElement form = querySelector("#search form");
     form.addEventListener("submit", (evt) -> {
-        HTMLInputElement input = Js.uncheckedCast(form.querySelector("input"));
+        HTMLInputElement input = (HTMLInputElement) form.querySelector("input");
         doSearch(input.value);
         evt.preventDefault();
       });
@@ -148,7 +146,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
     // todo hide first anchor with css
     forEach("#submenu > nav > ul > li", el -> {
       el.style.display = "none";
-      forEachChild(el, child -> "a".equalsIgnoreCase(child.tagName), child -> child.style.display = "none");
+      forEachChild(el, "a", child -> child.style.display = "none");
     });
 
     String path = Window.Location.getPath();
@@ -212,10 +210,10 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
   private List<HTMLElement> parentMenuItems(HTMLElement selectedItem) {
     ArrayList<HTMLElement> ret = new ArrayList<>();
-    elemental2.dom.Element current = selectedItem;
+    Element current = selectedItem;
     while (current != null) {
       if (current.tagName.equalsIgnoreCase("li")) {
-        ret.add(Js.uncheckedCast(current));
+        ret.add((HTMLElement) current);
       }
       if ("submenu".equals(current.id)) {
         break;
@@ -230,9 +228,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
    */
   private void enhancePage() {
     HTMLElement nav = querySelector("#nav");
-    nav.addEventListener("mouseenter", evt -> {
-        nav.classList.remove("closed");
-    });
+    nav.addEventListener("mouseenter", evt -> nav.classList.remove("closed"));
     nav.addEventListener("mouseleave", evt -> {
         if (!nav.classList.contains("alwaysOpen")) {
           nav.classList.add("closed");
@@ -250,13 +246,13 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
     // Use Ajax instead of default behaviour
     document.body.addEventListener("click", evt -> {
-      elemental2.dom.Element target = Js.uncheckedCast(evt.target);
+      Element target = (Element) evt.target;
         if (target.closest("a") == null) {
           return;
         }
         if (shouldEnhanceLink(target) &&
             // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
-            handleAsClick(Js.uncheckedCast(evt))) {
+            handleAsClick((MouseEvent) evt)) {
 
           // In mobile, if menu is visible, close it
           forEach("#submenu.show", el -> el.classList.remove("show"));
@@ -272,7 +268,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
 
-  public boolean handleAsClick(elemental2.dom.MouseEvent event) {
+  public boolean handleAsClick(MouseEvent event) {
     int mouseButtons = event.button;
     boolean modifiers = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
     boolean middle = mouseButtons == 4;
@@ -280,7 +276,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
     return !modifiers && !middle && !right;
   }
 
-  private boolean shouldEnhanceLink(elemental2.dom.Element link) {
+  private boolean shouldEnhanceLink(Element link) {
     return
         // Enhance only local links
         isSameOriginRexp.test(link.getAttribute("href")) &&
@@ -299,7 +295,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
        if (shouldEnhanceLink(el)) {
          // No need to make complicated things for computing
          // the absolute path: anchor.pathname is the way
-         HTMLAnchorElement link = Js.uncheckedCast(el);
+         HTMLAnchorElement link = (HTMLAnchorElement) el;
          link.href = link.pathname;
        }
     });
@@ -314,25 +310,23 @@ public class GWTProjectEntryPoint implements EntryPoint {
         el.parentElement.insertBefore(document.createElement("span"), el);
       }
     });
-    Predicate<HTMLElement> spanOrLocalLink = el -> el.tagName.equalsIgnoreCase("span") ||
-        (el.tagName.equalsIgnoreCase("a") && el.getAttribute("href").startsWith("#"));
+    String spanOrLocalLink = "span,a[href^='#']";
     forEachChild(querySelector("#submenu"), spanOrLocalLink, el -> {
-      el.removeEventListener("click", Js.uncheckedCast(Js.asPropertyMap(el).get("clickListener")));
+      EventListener clickListener = (EventListener) Js.asPropertyMap(el).get("clickListener");
+      el.removeEventListener("click", clickListener);
     });
 
     // Toggle the branch when clicking on the arrow or anchor without content
     parentItems.forEach(item -> {
       forEachChild(item, spanOrLocalLink, element -> {
-        EventListener eventListener = (evt) -> {
-          toggleMenu(Js.uncheckedCast(Js.<Element>uncheckedCast(evt.target).parentElement));
-        };
+        EventListener eventListener = (evt) ->
+            toggleMenu((HTMLElement) ((Element) evt.target).parentElement);
         element.addEventListener("click", eventListener);
         Js.asPropertyMap(element).set("clickListener", eventListener);
       });
       item.classList.add("folder");
       if (!item.classList.contains("open")) {
-        forEachChild(item,
-            child -> child.tagName.equalsIgnoreCase("ul"),
+        forEachChild(item, "ul",
             child -> slideUp(child, 0));
       }
     });
@@ -340,16 +334,16 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
   private void toggleMenu(HTMLElement menu) {
     boolean open = menu.classList.toggle("open");
-    forEachChild(menu, child -> child.tagName.equalsIgnoreCase("ul"),
+    forEachChild(menu, "ul",
         child->slideToggle(child, ANIMATION_TIME, open));
   }
 
   private void showBranch(final HTMLElement item) {
     Scheduler.get().scheduleDeferred(() -> {
-      elemental2.dom.Element parent = item.closest("li");
+      Element parent = item.closest("li");
       while (parent != null) {
         parent.classList.add("open");
-        forEachChild(parent, (htmlElement) -> htmlElement.tagName.equalsIgnoreCase("UL"),
+        forEachChild(parent, "ul",
             (htmlElement) -> slideDown(htmlElement, ajaxEnabled ? ANIMATION_TIME : 0));
         parent = parent.parentElement.closest("li");
       }
@@ -359,8 +353,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
   /*
    * Change URL via pushState and load the page via Ajax.
    */
-  private void loadPage(elemental2.dom.Element link) {
-    String pageUrl = link == null ? null : Js.<HTMLAnchorElement>uncheckedCast(link).pathname;
+  private void loadPage(Element link) {
+    String pageUrl = link == null ? null : ((HTMLAnchorElement) link).pathname;
 
     boolean shouldReplaceMenu = shouldReplaceMenu(pageUrl);
     if (!currentPage.equals(pageUrl)) {
@@ -384,8 +378,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
   private void ajaxLoad(String pageUrl, final boolean shouldReplaceMenu) {
     fetch(pageUrl).then(Response::text).then(responseText -> {
-      HTMLElement content = Js.uncheckedCast(document
-          .createElement("div"));
+      HTMLElement content = (HTMLElement) document.createElement("div");
       content.innerHTML = responseText;
 
       if (shouldReplaceMenu) {
@@ -430,7 +423,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
    */
   private void scrollToHash() {
     String hash = Window.Location.getHash();
-    elemental2.dom.Element anchor = hash.length() > 1 ? document.querySelector(
+    Element anchor = hash.length() > 1 ? document.querySelector(
         hash + ", [name='" + hash.substring(1) + "']") : null;
     if (anchor == null) {
       Window.scrollTo(0, 0);
@@ -493,30 +486,30 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
   private void styleHomepage() {
     final int windowHeight = window.innerHeight;
-    int sectionHeight = Js.<HTMLElement>uncheckedCast(document.querySelector("#letsbegin")).offsetHeight;
+    int sectionHeight = ((HTMLElement) document.querySelector("#letsbegin")).offsetHeight;
 
     if (windowHeight > sectionHeight) {
       forEach(".home section", element -> {
         element.style.setProperty("height", windowHeight + "px");
         element.style.setProperty("padding", "0");
-        HTMLElement container = Js.uncheckedCast(element.querySelector(".container"));
+        HTMLElement container = (HTMLElement) element.querySelector(".container");
         container.style.setProperty("padding-top", (windowHeight - container.offsetHeight) / 2 + "px");
       });
     }
   }
 
-  private void forEach(String selector, Consumer<HTMLElement> consumer) {
+  private void forEach(String selector, ElementConsumer consumer) {
     document.querySelectorAll(selector).forEach((element, index, parent) -> {
-      consumer.accept(Js.uncheckedCast(element));
+      consumer.accept((HTMLElement) element);
       return null;
     });
   }
 
-  private void forEachChild(Element parent, Predicate<HTMLElement> filter, Consumer<HTMLElement> consumer) {
+  private void forEachChild(Element parent, String selector, ElementConsumer consumer) {
     parent.childNodes.forEach((element, index, p) -> {
-      if (element.nodeType == Node.ELEMENT_NODE) {
-        if (filter.test(Js.uncheckedCast(element))) {
-          consumer.accept(Js.uncheckedCast(element));
+      if (element instanceof HTMLElement) {
+        if (((HTMLElement) element).matches(selector)) {
+          consumer.accept((HTMLElement) element);
         }
       }
       return null;
@@ -527,4 +520,9 @@ public class GWTProjectEntryPoint implements EntryPoint {
       var element = $wnd.google.search.cse.element.getElement('searchresults');
       element.execute(value);
   }-*/;
+
+  @JsFunction
+  private interface ElementConsumer {
+    void accept(HTMLElement element);
+  }
 }

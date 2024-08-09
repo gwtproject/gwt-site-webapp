@@ -1,6 +1,8 @@
 package com.google.gwt.site.webapp.client.highlight;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.ScriptInjector;
+import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.TextResource;
@@ -29,10 +31,7 @@ public class JsHighlight {
   public void initialize() {
     if (!initialized) {
       initialized = true;
-      CssHighlight.INSTANCE.idea().ensureInjected();
-      Element script = document.createElement("script");
-      script.textContent = CssHighlight.INSTANCE.highlight().getText();
-      document.head.appendChild(script);
+      ScriptInjector.fromString(CssHighlight.INSTANCE.highlight().getText()).inject();
     }
   }
 
