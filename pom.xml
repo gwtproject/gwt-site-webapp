@@ -14,7 +14,7 @@
 
         <gwt.version>2.11.0</gwt.version>
 
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.2</junit.version>
 
         <!-- plugin -->
         <surefire-plugin.version>2.17</surefire-plugin.version>
