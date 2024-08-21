@@ -434,7 +434,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private void maybeStyleHomepage() {
-    if (document.querySelector("#content").classList.contains("home")) {
+    if (querySelector("#content").classList.contains("home")) {
       document.documentElement.style.setProperty("scroll-behavior", "smooth");
       styleHomepage();
       resizeHandler = Window.addResizeHandler(event -> styleHomepage());
