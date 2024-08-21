@@ -13,7 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.google.gwt.site.webapp.client;
+
+import static elemental2.dom.DomGlobal.*;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -22,14 +25,11 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.site.webapp.client.highlight.JsHighlight;
 import com.google.gwt.user.client.Window;
+import elemental2.core.JsArray;
+import elemental2.core.JsWeakMap;
 import elemental2.dom.*;
 import jsinterop.annotations.JsFunction;
-import jsinterop.base.Js;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static elemental2.dom.DomGlobal.*;
+import jsinterop.base.JsArrayLike;
 
 public class GWTProjectEntryPoint implements EntryPoint {
 
@@ -51,6 +51,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   private static String currentPage = Window.Location.getPath();
   private HandlerRegistration resizeHandler;
   private EventListener homeScrollHandler;
+  private final JsWeakMap<Element, EventListener> clickHandlers = new JsWeakMap<>();
 
   private void slideToggle(HTMLElement el, int animationTime, boolean open) {
     if (open) {
@@ -70,7 +71,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
   private int estimateHeight(HTMLElement el) {
-    // applied as max-height, so overestimating only makes the animation lag slightly towards the start/end
+    // applied as max-height, so overestimating only makes the animation
+    // lag slightly towards the start/end
     return el.childElementCount * 33;
   }
 
@@ -92,7 +94,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
       });
       el.dataset.set("transitionListener", "true");
     }
-    setTimeout((ignore) -> el.style.setProperty("max-height", to + "px"), 0);
+    Scheduler.get().scheduleDeferred(() -> el.style.setProperty("max-height", to + "px"));
   }
 
   @Override
@@ -118,10 +120,10 @@ public class GWTProjectEntryPoint implements EntryPoint {
   private void bindSearch() {
     HTMLElement form = querySelector("#search form");
     form.addEventListener("submit", (evt) -> {
-        HTMLInputElement input = (HTMLInputElement) form.querySelector("input");
-        doSearch(input.value);
-        evt.preventDefault();
-      });
+      HTMLInputElement input = (HTMLInputElement) form.querySelector("input");
+      doSearch(input.value);
+      evt.preventDefault();
+    });
   }
 
   private void enhanceMenu() {
@@ -150,34 +152,32 @@ public class GWTProjectEntryPoint implements EntryPoint {
     });
 
     String path = Window.Location.getPath();
-    HTMLElement[] container = new HTMLElement[1];
-    forEach("#submenu a[href='" + path + "']", el -> {
-      if (!el.style.display.equals("none")) {
-        container[0] = el;
-      }
-    });
-    HTMLElement selectedItem = container[0];
+    JsArrayLike<? extends Element> matchingLinks = document
+        .querySelectorAll("#submenu a[href='" + path + "']");
+    HTMLElement selectedItem = (HTMLElement) JsArray.from(matchingLinks)
+        .find((el, index, parent) -> !"none".equals(((HTMLElement) el).style.display));
     String mainNavigationHref;
     String mainTitle;
     if (selectedItem != null) {
 
       showBranch(selectedItem);
 
-      List<HTMLElement> liParents = parentMenuItems(selectedItem);
+      JsArray<HTMLElement> liParents = parentMenuItems(selectedItem);
 
-      HTMLElement subMenuItem = liParents.get(liParents.size() - 1);
+      HTMLElement subMenuItem = liParents.getAt(liParents.length - 1);
 
       subMenuItem.style.display = "";
       forEach("#submenu .active", el -> {
-        if (!liParents.contains(el)) {
+        if (liParents.indexOf(el) >= 0) {
           el.classList.remove("active");
         }
       });
-      liParents.add(selectedItem);
-      liParents.forEach(el -> {
+      liParents.push(selectedItem);
+      liParents.forEach((el, index, array) -> {
         if (el != selectedItem.parentElement) {
           el.classList.add("active");
         }
+        return null;
       });
       mainNavigationHref = subMenuItem.querySelector("a").getAttribute("href");
       mainTitle = subMenuItem.querySelector("a").textContent + " - " + selectedItem.textContent;
@@ -208,12 +208,12 @@ public class GWTProjectEntryPoint implements EntryPoint {
     maybeStyleHomepage();
   }
 
-  private List<HTMLElement> parentMenuItems(HTMLElement selectedItem) {
-    ArrayList<HTMLElement> ret = new ArrayList<>();
+  private JsArray<HTMLElement> parentMenuItems(HTMLElement selectedItem) {
+    JsArray<HTMLElement> ret = new JsArray<>();
     Element current = selectedItem;
     while (current != null) {
       if (current.tagName.equalsIgnoreCase("li")) {
-        ret.add((HTMLElement) current);
+        ret.push((HTMLElement) current);
       }
       if ("submenu".equals(current.id)) {
         break;
@@ -230,9 +230,9 @@ public class GWTProjectEntryPoint implements EntryPoint {
     HTMLElement nav = querySelector("#nav");
     nav.addEventListener("mouseenter", evt -> nav.classList.remove("closed"));
     nav.addEventListener("mouseleave", evt -> {
-        if (!nav.classList.contains("alwaysOpen")) {
-          nav.classList.add("closed");
-        }
+      if (!nav.classList.contains("alwaysOpen")) {
+        nav.classList.add("closed");
+      }
     });
 
     enhanceLinks();
@@ -247,20 +247,20 @@ public class GWTProjectEntryPoint implements EntryPoint {
     // Use Ajax instead of default behaviour
     document.body.addEventListener("click", evt -> {
       Element target = (Element) evt.target;
-        if (target.closest("a") == null) {
-          return;
-        }
-        if (shouldEnhanceLink(target) &&
-            // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
-            handleAsClick((MouseEvent) evt)) {
+      if (target.closest("a") == null) {
+        return;
+      }
+      if (shouldEnhanceLink(target)
+          // Is it a normal click (not ctrl/cmd/shift/right/middle click) ?
+          && handleAsClick((MouseEvent) evt)) {
 
-          // In mobile, if menu is visible, close it
-          forEach("#submenu.show", el -> el.classList.remove("show"));
+        // In mobile, if menu is visible, close it
+        forEach("#submenu.show", el -> el.classList.remove("show"));
 
-          // Load the page using Ajax
-          loadPage(target);
-          evt.preventDefault();
-        }
+        // Load the page using Ajax
+        loadPage(target);
+        evt.preventDefault();
+      }
     });
 
     // Select the TOC item when URL changes
@@ -268,7 +268,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
   }
 
 
-  public boolean handleAsClick(MouseEvent event) {
+  private boolean handleAsClick(MouseEvent event) {
     int mouseButtons = event.button;
     boolean modifiers = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
     boolean middle = mouseButtons == 4;
@@ -279,9 +279,9 @@ public class GWTProjectEntryPoint implements EntryPoint {
   private boolean shouldEnhanceLink(Element link) {
     return
         // Enhance only local links
-        isSameOriginRexp.test(link.getAttribute("href")) &&
+        isSameOriginRexp.test(link.getAttribute("href"))
         // Do not load links that are marked as full page reload
-        !Boolean.parseBoolean(link.getAttribute("data-full-load"));
+        && !Boolean.parseBoolean(link.getAttribute("data-full-load"));
   }
 
   private void enhanceLinks() {
@@ -289,54 +289,50 @@ public class GWTProjectEntryPoint implements EntryPoint {
     // exclude all anchors in the conHighlight and collapse menutent area.
     // TODO could be done on server side
 
-    forEach("a", el -> {
-       if (el.closest("#content") != null) {
-         return;
-       }
-       if (shouldEnhanceLink(el)) {
-         // No need to make complicated things for computing
-         // the absolute path: anchor.pathname is the way
-         HTMLAnchorElement link = (HTMLAnchorElement) el;
-         link.href = link.pathname;
-       }
+    forEach("a:not(#content a)", el -> {
+      if (shouldEnhanceLink(el)) {
+        // No need to make complicated things for computing
+        // the absolute path: anchor.pathname is the way
+        HTMLAnchorElement link = (HTMLAnchorElement) el;
+        link.href = link.pathname;
+      }
     });
 
     // We add a span with the +/- icon so as the click area is well defined
     // this span is not rendered in server side because it is only needed
     // for enhancing the page.
-    List<HTMLElement> parentItems = new ArrayList<>();
+    JsArray<HTMLElement> parentItems = new JsArray<>();
     forEach("#submenu ul > li li", el -> {
       if (el.querySelector("ul") != null) {
-        parentItems.add(el);
+        parentItems.push(el);
         el.parentElement.insertBefore(document.createElement("span"), el);
       }
     });
-    String spanOrLocalLink = "span,a[href^='#']";
+    String spanOrLocalLink = "span,a[href='#']";
     forEachChild(querySelector("#submenu"), spanOrLocalLink, el -> {
-      EventListener clickListener = (EventListener) Js.asPropertyMap(el).get("clickListener");
-      el.removeEventListener("click", clickListener);
+      el.removeEventListener("click", clickHandlers.get(el));
     });
-
     // Toggle the branch when clicking on the arrow or anchor without content
-    parentItems.forEach(item -> {
+    parentItems.forEach((item, index, array) -> {
       forEachChild(item, spanOrLocalLink, element -> {
         EventListener eventListener = (evt) ->
             toggleMenu((HTMLElement) ((Element) evt.target).parentElement);
         element.addEventListener("click", eventListener);
-        Js.asPropertyMap(element).set("clickListener", eventListener);
+        clickHandlers.set(element, eventListener);
       });
       item.classList.add("folder");
       if (!item.classList.contains("open")) {
         forEachChild(item, "ul",
             child -> slideUp(child, 0));
       }
+      return null;
     });
   }
 
   private void toggleMenu(HTMLElement menu) {
     boolean open = menu.classList.toggle("open");
     forEachChild(menu, "ul",
-        child->slideToggle(child, ANIMATION_TIME, open));
+        child -> slideToggle(child, ANIMATION_TIME, open));
   }
 
   private void showBranch(final HTMLElement item) {
@@ -447,7 +443,6 @@ public class GWTProjectEntryPoint implements EntryPoint {
       }));
 
       forEach(".pager a", (element) -> element.addEventListener("click", event -> {
-        event.preventDefault();
         forEach(".pager a", e -> e.classList.remove("active"));
         element.classList.add("active");
       }));
@@ -494,7 +489,8 @@ public class GWTProjectEntryPoint implements EntryPoint {
         element.style.setProperty("height", windowHeight + "px");
         element.style.setProperty("padding", "0");
         HTMLElement container = (HTMLElement) element.querySelector(".container");
-        container.style.setProperty("padding-top", (windowHeight - container.offsetHeight) / 2 + "px");
+        container.style.setProperty("padding-top",
+            (windowHeight - container.offsetHeight) / 2 + "px");
       });
     }
   }
