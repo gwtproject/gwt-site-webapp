@@ -16,7 +16,7 @@
 - To **build** and check the app, run
 
         $ cd [...]/gwt-site-webapp
-        $ mvn verify
+        $ mvn verify -P full-site
 
   Now you can point your browser to the `target/www` folder, or you can serve
   its content with any web-server (i.e [serve](https://www.npmjs.com/package/serve)).

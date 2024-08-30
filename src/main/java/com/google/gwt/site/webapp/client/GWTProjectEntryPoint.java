@@ -168,7 +168,7 @@ public class GWTProjectEntryPoint implements EntryPoint {
 
       subMenuItem.style.display = "";
       forEach("#submenu .active", el -> {
-        if (liParents.indexOf(el) >= 0) {
+        if (liParents.indexOf(el) < 0) {
           el.classList.remove("active");
         }
       });
