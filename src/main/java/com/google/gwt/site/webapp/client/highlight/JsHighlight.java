@@ -31,6 +31,7 @@ public class JsHighlight {
       initialized = true;
       ScriptInjector.fromString(CssHighlight.INSTANCE.highlight().getText())
           .setWindow(Js.uncheckedCast(DomGlobal.window)).inject();
+      CssHighlight.INSTANCE.idea().ensureInjected();
     }
   }
 
