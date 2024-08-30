@@ -2,14 +2,12 @@ package com.google.gwt.site.webapp.client.highlight;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.TextResource;
-import elemental2.dom.Element;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
-
-import static elemental2.dom.DomGlobal.document;
+import jsinterop.base.Js;
 
 public class JsHighlight {
 
@@ -31,7 +29,8 @@ public class JsHighlight {
   public void initialize() {
     if (!initialized) {
       initialized = true;
-      ScriptInjector.fromString(CssHighlight.INSTANCE.highlight().getText()).inject();
+      ScriptInjector.fromString(CssHighlight.INSTANCE.highlight().getText())
+          .setWindow(Js.uncheckedCast(DomGlobal.window)).inject();
     }
   }
 
