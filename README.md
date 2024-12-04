@@ -1,28 +1,35 @@
 # gwt-site-webapp
- This project includes the server an client code of the GWT site
- It does not include the site content which is in the gwt-site project
- nor the utilities for uploading the documentation to GAE Servers which
- are in the gwt-site-uploader project.
+This project includes the client code of the GWT site. It does not include the
+site content which is in the gwt-site project nor the utilities to create and
+deploy with samples and plugin releases.
 
 ## Requirements
- [Apache Maven](http://maven.apache.org) 3.0 or greater, and JDK 7+ in order to run.
+[Apache Maven](http://maven.apache.org) 3.8 or greater, and JDK 11+ in order to run.
 
-- Before building the project you may need **gwt-site** packaged file.
-  Go to the `gwt-site` folder and run:
+To build the project, invoke the following command:
+
+    $ mvn verify
+
+This only tests and builds the JS to enhance the site content. To build the contents
+first, you need to build the gwt-site project.
+
+1. Check out the [gwt-site](https://github.com/gwtproject/gwt-site) project.
+2. Build the gwt-site project:
 
         $ cd [...]/gwt-site
         $ mvn install
 
-- To **build** and check the app, run
+3. Build the gwt-site-webapp project, with the -Pfull-site profile:
 
         $ cd [...]/gwt-site-webapp
-        $ mvn verify
+        $ mvn verify -Pfull-site
 
-  Now you can point your browser to the `target/www` folder, or you can serve
-  its content with any web-server (i.e [serve](https://www.npmjs.com/package/serve)).
-  Notice that the second way is needed if you want to test site navigation via Ajax.
+Now you can point your browser to the `target/www` folder, or you can serve
+its content with any web-server (i.e [serve](https://www.npmjs.com/package/serve) or
+[http.server](https://docs.python.org/3/library/http.server.html)).
+Notice that an http server is needed if you want to test site navigation via Ajax.
 
-- Building will run the **tests**, but to explicitly run them you can use the test target
+Building will run the **tests**, but to explicitly run them you can use the test target
 
         $ mvn test
 
