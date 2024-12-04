@@ -12,10 +12,9 @@
         <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <gwt.version>2.9.0</gwt.version>
-        <gwtquery.version>1.5-beta1</gwtquery.version>
+        <gwt.version>2.12.1</gwt.version>
 
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.2</junit.version>
 
         <!-- plugin -->
         <surefire-plugin.version>2.17</surefire-plugin.version>
@@ -33,18 +32,23 @@
 
         <!-- UI dependencies -->
         <dependency>
-            <groupId>com.google.gwt</groupId>
+            <groupId>org.gwtproject</groupId>
             <artifactId>gwt-user</artifactId>
             <version>${gwt.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.gwtquery</groupId>
-            <artifactId>gwtquery</artifactId>
-            <version>${gwtquery.version}</version>
+            <groupId>com.google.elemental2</groupId>
+            <artifactId>elemental2-dom</artifactId>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
-            <groupId>com.google.gwt</groupId>
+            <groupId>org.gwtproject</groupId>
             <artifactId>gwt-dev</artifactId>
+            <version>${gwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-codeserver</artifactId>
             <version>${gwt.version}</version>
         </dependency>
     </dependencies>
