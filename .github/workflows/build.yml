@@ -18,8 +18,11 @@ jobs:
       - name: Compile the webapp to JS
         run: mvn --batch-mode --no-transfer-progress -e verify
 
+      - name: Rename generated directory
+        # Fixes issue where artifact zip contains top level directory due to wildcard expansion
+        run: mv target/gwt-site-webapp-*/ target/gwt-site-webapp
       - name: Upload the generated JS
         uses: actions/upload-artifact@v3
         with:
           name: 'gwt-site-webapp'
-          path: target/gwt-site-webapp-*/
+          path: target/gwt-site-webapp/
