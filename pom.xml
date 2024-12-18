@@ -12,7 +12,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <gwt.version>2.11.0</gwt.version>
+        <gwt.version>2.12.1</gwt.version>
 
         <junit.version>4.13.2</junit.version>
 
@@ -81,6 +81,11 @@
                     <compilerArgs>
                         <arg>-saveSource</arg>
                     </compilerArgs>
+                    <!--
+                    Draft and pretty mode are turned on so that beginners can try out debugging
+                    in their browser with no setup.
+                    Please don't disable this; code size is less important.
+                    -->
                     <draftCompile>true</draftCompile>
                     <style>PRETTY</style>
                     <failOnError>true</failOnError>
@@ -103,7 +108,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}/</outputDirectory>
                             <resources>
                                 <!-- copy GWT source code to website for debugging -->
                                 <resource>
@@ -175,7 +180,7 @@
                                     <outputDirectory>${project.build.directory}/www/</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>${project.build.directory}/${project.artifactId}-${project.version}/</directory>
+                                            <directory>${project.build.directory}/${project.build.finalName}/</directory>
                                         </resource>
                                     </resources>
                                 </configuration>
